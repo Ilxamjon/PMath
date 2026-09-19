@@ -40,5 +40,6 @@ Batafsil reja: [ROADMAP.md](ROADMAP.md)
 - **Avtomatik push:** `git config core.hooksPath .githooks` (loyihada bir marta). Keyin har `git commit` dan so‘ng `origin` ga push qilinadi.
 - **Cursor:** agent vazifa tugagach `.cursor/hooks.json` orqali `scripts/sync-to-github.ps1` ishlaydi (o‘zgarish bo‘lsa commit + push).
 - Qo‘lda: `powershell -File scripts/sync-to-github.ps1`
+- CI (ixtiyoriy): `scripts/flutter_ci.yml.example` ni `.github/workflows/` ga ko‘chiring. GitHub CLI uchun `gh auth refresh -s workflow` kerak bo‘lishi mumkin.
 
 Maxfiy kalitlar (`GEMINI_API_KEY`, `TELEGRAM_BOT_TOKEN`) faqat `--dart-define` orqali build vaqtida — repoga kiritilmaydi.

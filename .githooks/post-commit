@@ -1,0 +1,6 @@
+#!/bin/sh
+# Har commitdan keyin GitHubga push (internet bo'lsa).
+branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null) || exit 0
+remote=$(git remote get-url origin 2>/dev/null) || exit 0
+[ -n "$remote" ] || exit 0
+git push origin "$branch" 2>/dev/null || true

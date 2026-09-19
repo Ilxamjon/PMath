@@ -1,0 +1,170 @@
+import '../../../models/question_model.dart';
+
+/// Prezident maktabi uslubidagi mini-imtihon savollari.
+abstract final class ExamQuestionBank {
+  static List<QuestionModel> forWeek(int weekNumber, {int? seed}) {
+    final all = _bank;
+    // Haftaga qarab siljitish — har imtihon biroz boshqacha.
+    final offset = (weekNumber * 3 + (seed ?? 0)) % all.length;
+    final picked = <QuestionModel>[];
+    for (var i = 0; i < 10; i++) {
+      picked.add(all[(offset + i) % all.length]);
+    }
+    return picked;
+  }
+
+  static const _bank = <QuestionModel>[
+    QuestionModel(
+      id: 'ex_ar_1',
+      prompt: 'Hisoblang:',
+      latexFormula: r'125 + 87',
+      category: QuestionCategory.arithmetic,
+      difficulty: QuestionDifficulty.easy,
+      correctAnswer: '212',
+      options: ['202', '212', '222', '211'],
+      explanationUz: '125 + 87 = 212.',
+      points: 10,
+    ),
+    QuestionModel(
+      id: 'ex_ar_2',
+      prompt: 'Ko‘paytmani toping:',
+      latexFormula: r'12 \times 11',
+      category: QuestionCategory.arithmetic,
+      difficulty: QuestionDifficulty.medium,
+      correctAnswer: '132',
+      options: ['121', '132', '122', '144'],
+      explanationUz: '12×11 = 132.',
+      points: 10,
+    ),
+    QuestionModel(
+      id: 'ex_ar_3',
+      prompt: 'Ayiring:',
+      latexFormula: r'1000 - 456',
+      category: QuestionCategory.arithmetic,
+      difficulty: QuestionDifficulty.medium,
+      correctAnswer: '544',
+      options: ['544', '554', '534', '546'],
+      explanationUz: '1000 − 456 = 544.',
+      points: 10,
+    ),
+    QuestionModel(
+      id: 'ex_ar_4',
+      prompt: 'Kasrni soddalashtiring:',
+      latexFormula: r'\dfrac{6}{8}',
+      category: QuestionCategory.arithmetic,
+      difficulty: QuestionDifficulty.medium,
+      correctAnswer: '3/4',
+      options: ['2/4', '3/4', '6/4', '1/2'],
+      explanationUz: '6 va 8 ni 2 ga bo‘ling: 3/4.',
+      points: 10,
+    ),
+    QuestionModel(
+      id: 'ex_ge_1',
+      prompt: 'To‘rtburchak tomonlari 9 sm va 4 sm. Perimetri?',
+      latexFormula: r'P = 2(a + b)',
+      category: QuestionCategory.geometry,
+      difficulty: QuestionDifficulty.easy,
+      correctAnswer: '26',
+      options: ['13', '26', '36', '18'],
+      explanationUz: 'P = 2(9+4) = 26 sm.',
+      points: 10,
+    ),
+    QuestionModel(
+      id: 'ex_ge_2',
+      prompt: 'Kvadrat yuzi 36 sm². Tomoni necha sm?',
+      latexFormula: r'S = a \times a',
+      category: QuestionCategory.geometry,
+      difficulty: QuestionDifficulty.medium,
+      correctAnswer: '6',
+      options: ['4', '6', '9', '12'],
+      explanationUz: '6×6 = 36, demak a = 6.',
+      points: 10,
+    ),
+    QuestionModel(
+      id: 'ex_ge_3',
+      prompt: 'To‘g‘ri burchak necha gradus?',
+      category: QuestionCategory.geometry,
+      difficulty: QuestionDifficulty.easy,
+      correctAnswer: '90',
+      options: ['45', '60', '90', '180'],
+      explanationUz: 'To‘g‘ri burchak = 90°.',
+      points: 10,
+    ),
+    QuestionModel(
+      id: 'ex_lo_1',
+      prompt: 'Qaysi son toq?',
+      category: QuestionCategory.logic,
+      difficulty: QuestionDifficulty.easy,
+      correctAnswer: '17',
+      options: ['16', '18', '17', '20'],
+      explanationUz: '17 ikkiga bo‘linmaydi — toq.',
+      points: 10,
+    ),
+    QuestionModel(
+      id: 'ex_lo_2',
+      prompt: 'Agar barcha olma meva bo‘lsa, qaysi gap to‘g‘ri?',
+      category: QuestionCategory.logic,
+      difficulty: QuestionDifficulty.medium,
+      correctAnswer: 'Ba’zi mevalar olma',
+      options: [
+        'Barcha mevalar olma',
+        'Ba’zi mevalar olma',
+        'Olma meva emas',
+        'Hech qanday olma yo‘q',
+      ],
+      explanationUz: 'Olmalar meva to‘plamining bir qismi.',
+      points: 10,
+    ),
+    QuestionModel(
+      id: 'ex_lo_3',
+      prompt: '3 ta qalam 1500 so‘m. 1 ta qalam necha so‘m?',
+      category: QuestionCategory.logic,
+      difficulty: QuestionDifficulty.medium,
+      correctAnswer: '500',
+      options: ['450', '500', '550', '600'],
+      explanationUz: '1500 ÷ 3 = 500.',
+      points: 10,
+    ),
+    QuestionModel(
+      id: 'ex_seq_1',
+      prompt: 'Ketma-ketlikni davom ettiring: 3, 6, 12, 24, …',
+      category: QuestionCategory.logicSequences,
+      difficulty: QuestionDifficulty.medium,
+      correctAnswer: '48',
+      options: ['36', '48', '30', '42'],
+      explanationUz: 'Har bir had ×2: 24×2 = 48.',
+      points: 10,
+    ),
+    QuestionModel(
+      id: 'ex_seq_2',
+      prompt: 'Ketma-ketlik: 5, 8, 11, 14, … Keyingi?',
+      category: QuestionCategory.logicSequences,
+      difficulty: QuestionDifficulty.easy,
+      correctAnswer: '17',
+      options: ['15', '16', '17', '18'],
+      explanationUz: 'Har safar +3: 14+3 = 17.',
+      points: 10,
+    ),
+    QuestionModel(
+      id: 'ex_seq_3',
+      prompt: '2, 4, 8, 16, 32, … Keyingi had?',
+      category: QuestionCategory.logicSequences,
+      difficulty: QuestionDifficulty.easy,
+      correctAnswer: '64',
+      options: ['48', '60', '64', '70'],
+      explanationUz: 'Har bir had ×2: 32×2 = 64.',
+      points: 10,
+    ),
+    QuestionModel(
+      id: 'ex_ar_5',
+      prompt: 'Bo‘ling:',
+      latexFormula: r'81 \div 9',
+      category: QuestionCategory.arithmetic,
+      difficulty: QuestionDifficulty.easy,
+      correctAnswer: '9',
+      options: ['7', '8', '9', '11'],
+      explanationUz: '81 ÷ 9 = 9.',
+      points: 10,
+    ),
+  ];
+}

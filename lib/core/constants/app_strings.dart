@@ -67,18 +67,20 @@ abstract final class AppStrings {
   static const String masteryPercent = 'O‘zlashtirish';
   static const String telegramAlerts = 'Telegram ogohlantirishlar';
   static const String telegramStatusOn = 'Bot ulangan';
-  static const String telegramStatusOff = 'Chat ID kiriting';
-  static const String telegramChatIdHint = 'Telegram chat_id';
-  static const String telegramSave = 'Saqlash';
+  static const String telegramStatusOff = 'Telegram ulanmagan';
+  static const String telegramConnect = 'Telegramni ulash';
   static const String telegramTest = 'Test xabar yuborish';
   static const String telegramRecent = 'So‘nggi xabarlar';
   static const String telegramEmptyLog = 'Hali xabar yo‘q';
-  static const String telegramSaved = 'Chat ID saqlandi';
   static const String telegramTestSent = 'Test xabar yuborildi / jurnalga yozildi';
   static const String telegramHowTo =
-      'Botga /start yozing, chat_id ni @userinfobot dan oling.';
+      'Tugma Telegramni ochadi. Bot “Ulandi” deb javob bergach, bu yer yangilanadi.';
   static const String telegramCloudOff =
-      'Bulut ulanmagan yoki chat ID yo‘q. Xabar lokal jurnalga yoziladi.';
+      'Bulut ulanmagan. Ogohlantirishlar lokal jurnalga yoziladi.';
+  static const String telegramWaiting = 'Ulanish kutilmoqda…';
+  static const String telegramLinkFailed = 'Kod olinmadi. Qayta urinib ko‘ring.';
+  static const String telegramOpenFailed = 'Telegram ochilmadi.';
+  static const String telegramLinked = 'Telegram ulandi';
   static const String parentLessonsProgress = 'Darslar progressi';
   static const String parentOverdueAlerted =
       '{n} ta kechikkan vazifa uchun ota-onaga xabar yuborildi';

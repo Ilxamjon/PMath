@@ -30,7 +30,7 @@ Sana: 2026-11-11. Ko‘rib chiqilgan: README, ROADMAP, `pubspec.yaml`, `lib/serv
 
 ### P1 — mahsulot
 - [x] **Real Vision OCR.** `RemoteVisionAiService` rasmni siqib `vision-analyze` ga yuboradi. Yaroqsiz JSON bir marta qayta uriniladi, keyin xato. `confidence < 0.75` da qadamlar tasdiqlanadi, avtomatik baholanmaydi. Rasm saqlanmaydi. Stub faqat debug.
-- [ ] **Telegram ulash:** chat ID ni qo‘lda kiritish o‘rniga `t.me/<bot>?start=<kod>` deep link.
+- [x] **Telegram ulash:** ota-ona panelidan bir martalik kod, `t.me/<bot>?start=<kod>`. `telegram-webhook` kodni tekshirib `profiles.telegram_chat_id` ga yozadi. Muddati o‘tgan yoki ishlatilgan kodga o‘zbekcha javob. Webhook `secret_token` bilan. Ulanmasa ogohlantirish lokal jurnalda. Bot tokeni ilovada yo‘q.
 - [ ] **Haqiqiy liga:** reyting uchun backend (hozir faqat lokal XP).
 - [ ] **TTS/STT:** `uz-UZ` ovozi qurilmaga bog‘liq — real telefonlarda sinab, matn rejimiga fallback.
 - [ ] **Mastery < 80% holati:** `applyPracticeResult` darsni har doim `completed` qiladi; qayta urinish oqimi (retry) aniq bo‘lishi kerak.

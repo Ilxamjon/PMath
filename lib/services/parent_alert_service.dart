@@ -6,6 +6,8 @@ import '../models/user_model.dart';
 import 'storage_service.dart';
 import 'supabase_gateway.dart';
 
+enum _SendOutcome { sent, notLinked, failed }
+
 /// Ota-ona ogohlantirishlari — Telegram Bot + lokal jurnal.
 abstract class ParentAlertService {
   Future<void> homeworkAssigned({
@@ -167,19 +169,29 @@ class TelegramParentAlertService implements ParentAlertService {
     String? error;
 
     if ((_gateway?.isReady ?? false) && chatId != null) {
-      channel = 'telegram';
       try {
-        delivered = await _sendTelegram(
-          chatId: chatId,
+        final outcome = await _sendTelegram(
           text: _formatTelegram(user: user, type: type, body: messageUz),
         );
-        if (!delivered) error = 'Telegram yuborilmadi';
+        if (outcome == _SendOutcome.sent) {
+          channel = 'telegram';
+          delivered = true;
+        } else if (outcome == _SendOutcome.notLinked) {
+          channel = 'local';
+          delivered = true;
+          await _clearChatId();
+        } else {
+          channel = 'telegram';
+          delivered = false;
+          error = 'Telegram yuborilmadi';
+        }
       } catch (e) {
+        channel = 'telegram';
         error = e.toString();
         delivered = false;
       }
     } else {
-      // Token/chat yo‘q — lokal navbat (SMS/Telegram keyin).
+      // Chat ulanmagan yoki bulut yo‘q — lokal jurnal.
       channel = 'local';
       delivered = true;
     }
@@ -208,23 +220,29 @@ class TelegramParentAlertService implements ParentAlertService {
         '$body';
   }
 
-  Future<bool> _sendTelegram({
-    required String chatId,
-    required String text,
-  }) async {
+  Future<void> _clearChatId() async {
+    final user = _storage.getUser();
+    if (user == null || user.telegramChatId == null) return;
+    await _storage.saveUser(user.copyWith(clearTelegramChatId: true));
+  }
+
+  Future<_SendOutcome> _sendTelegram({required String text}) async {
     final gateway = _gateway;
-    if (gateway == null) return false;
+    if (gateway == null) return _SendOutcome.failed;
     final result = await gateway.invoke(
       'telegram-notify',
-      {
-        'chatId': chatId,
-        'text': text,
-      },
+      {'text': text},
       timeout: const Duration(seconds: 12),
     );
-    return result != null &&
+    if (result != null &&
         result.statusCode == 200 &&
-        result.json?['ok'] == true;
+        result.json?['ok'] == true) {
+      return _SendOutcome.sent;
+    }
+    if (result?.statusCode == 409 && result?.json?['error'] == 'not_linked') {
+      return _SendOutcome.notLinked;
+    }
+    return _SendOutcome.failed;
   }
 
   @override

@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_strings.dart';
@@ -15,6 +18,7 @@ import '../../../../services/parent_alert_service.dart';
 import '../../../../services/storage_service.dart';
 import '../../../homework/data/homework_service.dart';
 import '../../../homework/presentation/pages/homework_detail_page.dart';
+import '../../domain/telegram_link_service.dart';
 
 /// Ota-ona paneli: real progress, zaif mavzu, Telegram alertlar.
 class ParentDashboardPage extends StatefulWidget {
@@ -27,48 +31,81 @@ class ParentDashboardPage extends StatefulWidget {
 }
 
 class _ParentDashboardPageState extends State<ParentDashboardPage> {
-  late final TextEditingController _chatIdController;
   var _busy = false;
+  var _waiting = false;
+  Timer? _poll;
 
   @override
   void initState() {
     super.initState();
-    _chatIdController = TextEditingController();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      final user = context.read<StorageService>().getUser() ?? widget.user;
-      _chatIdController.text = user.telegramChatId ?? '';
       context.read<HomeworkService>().checkOverdueAndAlert();
-      setState(() {});
+      _refreshLink();
     });
   }
 
   @override
   void dispose() {
-    _chatIdController.dispose();
+    _poll?.cancel();
     super.dispose();
   }
 
-  Future<void> _saveChatId() async {
-    final storage = context.read<StorageService>();
-    final user = storage.getUser() ?? widget.user;
-    final id = _chatIdController.text.trim();
-    await storage.saveUser(
-      user.copyWith(
-        telegramChatId: id,
-        clearTelegramChatId: id.isEmpty,
-      ),
-    );
+  Future<void> _refreshLink() async {
+    final status = await context.read<TelegramLinkService>().refresh();
+    if (!mounted || !status.reachable) return;
+    setState(() => _waiting = false);
+  }
+
+  Future<void> _connectTelegram() async {
+    setState(() => _busy = true);
+    final links = context.read<TelegramLinkService>();
+    final session = await links.startLink();
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text(AppStrings.telegramSaved),
-        backgroundColor: AppColors.success,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-    );
-    setState(() {});
+    if (session == null) {
+      setState(() => _busy = false);
+      _snack(AppStrings.telegramLinkFailed, AppColors.error);
+      return;
+    }
+
+    var opened = false;
+    try {
+      opened = await launchUrl(
+        session.url,
+        mode: LaunchMode.externalApplication,
+      );
+    } catch (_) {
+      opened = false;
+    }
+    if (!mounted) return;
+    if (!opened) {
+      setState(() => _busy = false);
+      _snack(AppStrings.telegramOpenFailed, AppColors.error);
+      return;
+    }
+
+    setState(() {
+      _busy = false;
+      _waiting = true;
+    });
+    _poll?.cancel();
+    var ticks = 0;
+    _poll = Timer.periodic(const Duration(seconds: 3), (timer) async {
+      ticks += 1;
+      final status = await links.refresh();
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+      if (status.linked) {
+        timer.cancel();
+        setState(() => _waiting = false);
+        _snack(AppStrings.telegramLinked, AppColors.success);
+      } else if (ticks >= 200) {
+        timer.cancel();
+        setState(() => _waiting = false);
+      }
+    });
   }
 
   Future<void> _sendTest() async {
@@ -79,10 +116,14 @@ class _ParentDashboardPageState extends State<ParentDashboardPage> {
     await alerts.sendTestMessage(user: user);
     if (!mounted) return;
     setState(() => _busy = false);
+    _snack(AppStrings.telegramTestSent, AppColors.info);
+  }
+
+  void _snack(String text, Color color) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Text(AppStrings.telegramTestSent),
-        backgroundColor: AppColors.info,
+        content: Text(text),
+        backgroundColor: color,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
@@ -93,6 +134,7 @@ class _ParentDashboardPageState extends State<ParentDashboardPage> {
   Widget build(BuildContext context) {
     final storage = context.read<StorageService>();
     final alerts = context.read<ParentAlertService>();
+    final links = context.read<TelegramLinkService>();
     final liveUser = storage.getUser() ?? widget.user;
     final diagnostic = storage.getDiagnosticResult();
     final studyBundle = storage.getStudyPlanBundle();
@@ -362,36 +404,34 @@ class _ParentDashboardPageState extends State<ParentDashboardPage> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  alerts.isTelegramConfigured
+                  links.isCloudReady
                       ? AppStrings.telegramHowTo
                       : AppStrings.telegramCloudOff,
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: _chatIdController,
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                    hintText: AppStrings.telegramChatIdHint,
-                    filled: true,
-                    fillColor: AppColors.background,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                if (_waiting) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    AppStrings.telegramWaiting,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: AppColors.info,
+                          fontWeight: FontWeight.w700,
+                        ),
                   ),
-                ),
-                const SizedBox(height: 10),
+                ],
+                const SizedBox(height: 12),
                 Row(
                   children: [
+                    if (links.isCloudReady)
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: _busy ? null : _connectTelegram,
+                          child: const Text(AppStrings.telegramConnect),
+                        ),
+                      ),
+                    if (links.isCloudReady) const SizedBox(width: 10),
                     Expanded(
                       child: OutlinedButton(
-                        onPressed: _busy ? null : _saveChatId,
-                        child: const Text(AppStrings.telegramSave),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: ElevatedButton(
                         onPressed: _busy ? null : _sendTest,
                         child: const Text(AppStrings.telegramTest),
                       ),

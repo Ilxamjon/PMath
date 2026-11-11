@@ -40,6 +40,7 @@ dependencies:
   image: ^4.5.4
   speech_to_text: ^7.4.0
   supabase_flutter: ^2.18.3
+  url_launcher: ^6.3.1
 
 dev_dependencies:
   flutter_test:

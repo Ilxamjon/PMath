@@ -8,6 +8,9 @@ const WINDOW_MS = 60_000;
 export const RATE_LIMITS = {
   'ai-coach': 20,
   'telegram-notify': 10,
+  'telegram-link': 6,
+  'telegram-status': 30,
+  'telegram-webhook': 60,
   'vision-analyze': 6,
 } as const;
 

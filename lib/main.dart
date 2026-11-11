@@ -12,6 +12,8 @@ import 'features/onboarding/presentation/app_bootstrap.dart';
 import 'features/proctoring/domain/proctoring_guard.dart';
 import 'features/study_plan/data/study_plan_repository.dart';
 import 'features/study_plan/domain/ai_study_plan_generator.dart';
+import 'features/parent_dashboard/data/edge_telegram_link_service.dart';
+import 'features/parent_dashboard/domain/telegram_link_service.dart';
 import 'services/ai_tutor_service.dart';
 import 'core/constants/supabase_config.dart';
 import 'services/auth_service.dart';
@@ -75,6 +77,9 @@ Future<void> main() async {
         RepositoryProvider<SttService>.value(value: stt),
         RepositoryProvider<ProctoringGuard>.value(value: proctoring),
         RepositoryProvider<ParentAlertService>.value(value: parentAlerts),
+        RepositoryProvider<TelegramLinkService>.value(
+          value: EdgeTelegramLinkService(gateway: gateway, storage: storage),
+        ),
         RepositoryProvider<AiTutorService>.value(value: tutor),
         RepositoryProvider<HomeworkService>.value(value: homeworkService),
         RepositoryProvider<VisionAiService>.value(value: visionAi),

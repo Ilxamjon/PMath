@@ -16,11 +16,11 @@ Ixtiyoriy konfiguratsiya (`--dart-define`). Ilovada faqat shu ikkisi qoladi:
 | `SUPABASE_URL` | Supabase loyiha manzili |
 | `SUPABASE_ANON_KEY` | Ochiq anon kalit (bu maxfiy kalit emas) |
 
-`GEMINI_API_KEY` va `TELEGRAM_BOT_TOKEN` APK ichiga yozilmaydi. Ularni Supabase secrets ga qo‘ying (`ai-coach`, `vision-analyze`, `telegram-notify`). Model nomi funksiya muhitida, standart `gemini-2.0-flash`.
+`GEMINI_API_KEY` va `TELEGRAM_BOT_TOKEN` APK ichiga yozilmaydi. Ularni Supabase secrets ga qo‘ying (`ai-coach`, `vision-analyze`, `telegram-notify`, `telegram-webhook`). Bot foydalanuvchi nomi `TELEGRAM_BOT_USERNAME`, webhook himoyasi `TELEGRAM_WEBHOOK_SECRET` (`X-Telegram-Bot-Api-Secret-Token`). Model nomi funksiya muhitida, standart `gemini-2.0-flash`.
 
 Anonim kirish yoqilgan bo‘lishi kerak (Authentication → Anonymous). Telefon OTP alohida ish. URL yoki anon kalit bo‘lmasa, ustoz, Telegram va ko‘rish lokal rejimda qoladi.
 
-Migratsiya: `supabase/migrations/20261111120000_edge_rate_limits.sql`.
+Migratsiya: `supabase/migrations/`. Telegram ulash uchun `20261111130000_telegram_link.sql`. Webhook da JWT o‘chiq (`supabase/config.toml`), himoya secret sarlavha.
 
 > Production chaqiruvlari Supabase Edge Function orqali o‘tadi. Batafsil: [docs/AUDIT.md](docs/AUDIT.md).
 

@@ -30,16 +30,35 @@ class _AppBootstrapState extends State<AppBootstrap> {
   UserModel? _user;
   var _gate = _AppGate.loading;
 
+  var _started = false;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (_gate != _AppGate.loading) return;
+    if (_started) return;
+    _started = true;
     _resolveGate();
   }
 
-  void _resolveGate() {
+  Future<void> _resolveGate() async {
     final storage = context.read<StorageService>();
-    final saved = storage.getUser();
+    var saved = storage.getUser();
+
+    if (storage.isOnboardingDone && saved != null) {
+      try {
+        final fresh = await context
+            .read<AuthService>()
+            .refreshAccess(saved)
+            .timeout(const Duration(seconds: 8));
+        if (!mounted) return;
+        if (fresh != null) {
+          saved = fresh;
+          await storage.saveUser(fresh);
+        }
+      } catch (_) {}
+    }
+
+    if (!mounted) return;
 
     if (!storage.isOnboardingDone || saved == null) {
       setState(() {

@@ -50,6 +50,7 @@ abstract final class MasteryHelper {
     return left <= 0 ? 0 : left;
   }
 
+  /// Serverdan kelgan sinov holati. Kesh bo‘lmasa kirish yo‘q.
   static bool hasSubscriptionAccess(UserModel user) {
     return user.hasAccessBeyondTrial;
   }

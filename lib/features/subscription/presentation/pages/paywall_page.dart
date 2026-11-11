@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/app_strings.dart';
-import '../../../../models/user_model.dart';
-import '../../../../services/storage_service.dart';
 
 /// Stub paywall — Click/Payme/RevenueCat keyinroq ulanadi.
 class PaywallPage extends StatelessWidget {
@@ -50,7 +47,7 @@ class PaywallPage extends StatelessWidget {
             title: AppStrings.paywallMonthly,
             price: _price(AppConstants.monthlyPriceUzs),
             subtitle: AppStrings.paywallMonthlyHint,
-            onTap: () => _activate(context, months: 1),
+            onTap: () => _activate(context),
           ),
           const SizedBox(height: 12),
           _PlanTile(
@@ -58,7 +55,7 @@ class PaywallPage extends StatelessWidget {
             price: _price(AppConstants.sixMonthPriceUzs),
             subtitle: AppStrings.paywallSixMonthHint,
             highlighted: true,
-            onTap: () => _activate(context, months: 6),
+            onTap: () => _activate(context),
           ),
           const SizedBox(height: 20),
           Text(
@@ -84,29 +81,14 @@ class PaywallPage extends StatelessWidget {
     return '$buf so‘m';
   }
 
-  Future<void> _activate(BuildContext context, {required int months}) async {
-    final storage = context.read<StorageService>();
-    final user = storage.getUser();
-    if (user == null) return;
-
-    final expires = DateTime.now().add(Duration(days: 30 * months));
-    await storage.saveUser(
-      user.copyWith(
-        subscriptionStatus: SubscriptionStatus.active,
-        subscriptionExpiresAt: expires,
-      ),
-    );
-
-    if (!context.mounted) return;
+  Future<void> _activate(BuildContext context) async {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(AppStrings.paywallActivated),
-        backgroundColor: AppColors.success,
+        content: Text(AppStrings.paywallStubNote),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
-    Navigator.of(context).pop(true);
   }
 }
 

@@ -1,15 +1,35 @@
-/// Auth servis abstraksiyasi — keyinchalik Supabase Phone SMS bilan to‘ldiriladi.
+import '../models/user_model.dart';
+
+/// OTP yoki tarmoq xatosi. UI o‘zbekcha matnga aylantiradi.
+enum AuthFailureKind { network, invalidCode }
+
+class AuthFailure implements Exception {
+  const AuthFailure(this.kind);
+
+  final AuthFailureKind kind;
+}
+
+/// Auth servis abstraksiyasi.
 abstract class AuthService {
   Future<void> sendOtp(String phone);
   Future<bool> verifyOtp(String phone, String code);
   Future<void> signOut();
   String? get currentUserId;
+
+  /// OTP dan keyin profil. Sinov sanalari serverdan keladi.
+  Future<UserModel> completeSignUp({
+    required String studentName,
+    required StudentGrade grade,
+    required String targetSchool,
+    required String parentPhone,
+    required int welcomeCoins,
+  });
+
+  /// Keshlangan foydalanuvchini server holati bilan yangilaydi.
+  Future<UserModel?> refreshAccess(UserModel cached);
 }
 
-/// Hozircha lokal stub (development).
-///
-/// Production: `Supabase.instance.client.auth.signInWithOtp(phone: phone)`
-/// va `verifyOTP(type: OtpType.sms, ...)`.
+/// Lokal stub. Faqat debug va Supabase sozlanmaganda ishlatiladi.
 class StubAuthService implements AuthService {
   String? _userId;
 
@@ -29,9 +49,6 @@ class StubAuthService implements AuthService {
 
   @override
   Future<void> sendOtp(String phone) async {
-    // TODO: await Supabase.instance.client.auth.signInWithOtp(
-    //   phone: normalizeUzPhone(phone),
-    // );
     final normalized = normalizeUzPhone(phone);
     assert(normalized.length >= 12);
     await Future<void>.delayed(const Duration(milliseconds: 500));
@@ -39,11 +56,6 @@ class StubAuthService implements AuthService {
 
   @override
   Future<bool> verifyOtp(String phone, String code) async {
-    // TODO: final res = await Supabase.instance.client.auth.verifyOTP(
-    //   phone: normalizeUzPhone(phone),
-    //   token: code,
-    //   type: OtpType.sms,
-    // );
     await Future<void>.delayed(const Duration(milliseconds: 500));
     final ok = code.trim().length >= 4;
     if (ok) {
@@ -54,7 +66,37 @@ class StubAuthService implements AuthService {
 
   @override
   Future<void> signOut() async {
-    // TODO: await Supabase.instance.client.auth.signOut();
     _userId = null;
   }
+
+  @override
+  Future<UserModel> completeSignUp({
+    required String studentName,
+    required StudentGrade grade,
+    required String targetSchool,
+    required String parentPhone,
+    required int welcomeCoins,
+  }) async {
+    final now = DateTime.now();
+    return UserModel(
+      id: currentUserId ?? 'local_${normalizeUzPhone(parentPhone)}',
+      studentName: studentName,
+      grade: grade,
+      targetSchool: targetSchool,
+      parentPhone: normalizeUzPhone(parentPhone),
+      createdAt: now,
+      lastActiveDate: now,
+      subscriptionStatus: SubscriptionStatus.trial,
+      trialStartedAt: now,
+      subscriptionExpiresAt: now.add(const Duration(days: 7)),
+      serverNowAtFetch: now,
+      deviceObservedAt: now,
+      coins: welcomeCoins,
+      level: 1,
+      streakDays: 1,
+    );
+  }
+
+  @override
+  Future<UserModel?> refreshAccess(UserModel cached) async => cached;
 }

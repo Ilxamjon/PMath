@@ -43,7 +43,7 @@ abstract final class AppStrings {
   static const String paywallSixMonth = '6 oy';
   static const String paywallSixMonthHint = 'Tejalgan tarif';
   static const String paywallStubNote =
-      'Demo: to‘lov Click/Payme keyinroq. Hozir «faollashtirish» stub.';
+      'To‘lov keyinroq server orqali ulanadi. Sinov muddatini bu yerda uzaytirib bo‘lmaydi.';
   static const String paywallActivated = 'Obuna faollashtirildi!';
   static const String practiceBlockedSubscription =
       '80%+ bor, lekin obuna kerak — keyingi dars yopiq.';
@@ -122,7 +122,10 @@ abstract final class AppStrings {
   static const String otpSubtitle = 'SMS dagi 6 xonali kodni kiriting';
   static const String otpHint = '------';
   static const String otpError = 'Kod noto‘g‘ri. Qayta urinib ko‘ring';
+  static const String otpNetwork =
+      'Internet yo‘q. Ulanishni tekshirib, qayta urinib ko‘ring';
   static const String otpResend = 'Qayta yuborish';
+  static const String otpResendWait = 'Qayta yuborish ({n} s)';
   static const String verifyOtp = 'Tasdiqlash';
   static const String otpDevHint = 'Sinov: istalgan 4+ xonali kod (masalan 1234)';
 

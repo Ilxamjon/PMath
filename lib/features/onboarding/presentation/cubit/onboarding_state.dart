@@ -25,6 +25,7 @@ class OnboardingState extends Equatable {
     this.errorMessage,
     this.completedUser,
     this.otpSent = false,
+    this.resendSecondsLeft = 0,
   });
 
   final OnboardingStep step;
@@ -39,6 +40,7 @@ class OnboardingState extends Equatable {
   final String? errorMessage;
   final UserModel? completedUser;
   final bool otpSent;
+  final int resendSecondsLeft;
 
   String get fullPhone {
     final digits = parentPhoneLocal.replaceAll(RegExp(r'\D'), '');
@@ -83,6 +85,7 @@ class OnboardingState extends Equatable {
     bool clearError = false,
     UserModel? completedUser,
     bool? otpSent,
+    int? resendSecondsLeft,
   }) {
     return OnboardingState(
       step: step ?? this.step,
@@ -95,6 +98,7 @@ class OnboardingState extends Equatable {
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
       completedUser: completedUser ?? this.completedUser,
       otpSent: otpSent ?? this.otpSent,
+      resendSecondsLeft: resendSecondsLeft ?? this.resendSecondsLeft,
     );
   }
 
@@ -110,5 +114,6 @@ class OnboardingState extends Equatable {
         errorMessage,
         completedUser,
         otpSent,
+        resendSecondsLeft,
       ];
 }

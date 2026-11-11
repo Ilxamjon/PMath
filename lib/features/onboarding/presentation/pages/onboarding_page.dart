@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -530,17 +531,28 @@ class _OtpStepState extends State<_OtpStep> {
             decoration: _fieldDecoration(AppStrings.otpHint),
           ),
           const SizedBox(height: 12),
-          Text(
-            AppStrings.otpDevHint,
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textMuted,
-                ),
-          ),
-          const SizedBox(height: 8),
+          if (kDebugMode && cubit.devOtpHint) ...[
+            Text(
+              AppStrings.otpDevHint,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColors.textMuted,
+                  ),
+            ),
+            const SizedBox(height: 8),
+          ],
           TextButton(
-            onPressed: widget.state.isLoading ? null : cubit.resendOtp,
-            child: const Text(AppStrings.otpResend),
+            onPressed: widget.state.isLoading || widget.state.resendSecondsLeft > 0
+                ? null
+                : cubit.resendOtp,
+            child: Text(
+              widget.state.resendSecondsLeft > 0
+                  ? AppStrings.otpResendWait.replaceAll(
+                      '{n}',
+                      '${widget.state.resendSecondsLeft}',
+                    )
+                  : AppStrings.otpResend,
+            ),
           ),
         ],
       ),

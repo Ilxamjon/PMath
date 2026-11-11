@@ -304,14 +304,19 @@ void main() {
     expect(MasteryHelper.remainingToUnlock(79), 1);
     expect(MasteryHelper.remainingToUnlock(80), 0);
 
+    final now = DateTime.now();
     final trialUser = UserModel(
       id: 'u1',
       studentName: 'Ali',
       grade: StudentGrade.grade3,
       targetSchool: 'PM',
       parentPhone: '+998901234567',
-      createdAt: DateTime.now(),
+      createdAt: now,
       subscriptionStatus: SubscriptionStatus.trial,
+      trialStartedAt: now,
+      subscriptionExpiresAt: now.add(const Duration(days: 7)),
+      serverNowAtFetch: now,
+      deviceObservedAt: now,
     );
     expect(
       MasteryHelper.canUnlockNext(currentMastery: 80, user: trialUser),
@@ -319,10 +324,10 @@ void main() {
     );
 
     final expired = trialUser.copyWith(
-      createdAt: DateTime.now().subtract(
-        Duration(days: AppConstants.freeTrialDays + 1),
-      ),
       subscriptionStatus: SubscriptionStatus.expired,
+      subscriptionExpiresAt: now.subtract(const Duration(days: 1)),
+      serverNowAtFetch: now,
+      deviceObservedAt: now,
     );
     expect(
       MasteryHelper.reasonBlockingUnlock(currentMastery: 85, user: expired),

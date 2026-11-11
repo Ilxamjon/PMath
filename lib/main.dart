@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -12,7 +13,9 @@ import 'features/proctoring/domain/proctoring_guard.dart';
 import 'features/study_plan/data/study_plan_repository.dart';
 import 'features/study_plan/domain/ai_study_plan_generator.dart';
 import 'services/ai_tutor_service.dart';
+import 'core/constants/supabase_config.dart';
 import 'services/auth_service.dart';
+import 'services/supabase_auth_service.dart';
 import 'services/parent_alert_service.dart';
 import 'services/storage_service.dart';
 import 'services/supabase_gateway.dart';
@@ -33,7 +36,10 @@ Future<void> main() async {
   final storage = await StorageService.init();
   final gateway = SupabaseGateway();
   await gateway.ensureSession();
-  final auth = StubAuthService();
+  final auth = createAuthService(
+    allowStub: kDebugMode,
+    supabaseConfigured: SupabaseConfig.isConfigured,
+  );
   final diagnosticRepo = LocalDiagnosticRepository(storage);
   final studyPlanRepo = LocalStudyPlanRepository(
     storage: storage,

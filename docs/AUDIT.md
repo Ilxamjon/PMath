@@ -24,8 +24,8 @@ Sana: 2026-11-11. Ko‘rib chiqilgan: README, ROADMAP, `pubspec.yaml`, `lib/serv
 
 ### P0 — xavfsizlik va asos
 - [x] **Backend proksi** (Supabase Edge Function): `ai-coach`, `telegram-notify`, `vision-analyze`. `GEMINI_API_KEY` va `TELEGRAM_BOT_TOKEN` faqat secrets da. Ilovada `SUPABASE_URL` va `SUPABASE_ANON_KEY`. JWT — anonim sessiya (telefon OTP hali ochiq). Tezlik chegarasi `edge_rate_limits`. Sessiya yoki tarmoq xatosida lokal fallback.
-- [ ] **Haqiqiy Auth:** Supabase Phone OTP (hozirgi `StubAuthService` istalgan 4+ belgili kodni qabul qiladi).
-- [ ] **Obuna / trial holati serverda** (hozir lokal `subscriptionExpiresAt` — soat yoki ma’lumotni tozalash bilan aylanib o‘tiladi).
+- [x] **Haqiqiy Auth:** `SupabaseAuthService` telefon OTP. `StubAuthService` faqat debug va Supabase sozlanmaganda. Release da istalgan kod bilan kirib bo‘lmaydi.
+- [x] **Obuna / trial holati serverda.** `profiles.subscription_expires_at` mijoz yozolmaydi. `MasteryHelper` server vaqti keshi bilan qaraydi; telefon soatini orqaga surish muddatni uzaytirmaydi.
 - [ ] **Bolalar ma’lumoti:** ota-ona roziligi, yuz tahlilini faqat qurilmada bajarish, rasmlarni saqlash muddati, O‘zbekistonning shaxsiy ma’lumotlar to‘g‘risidagi qonuni talablarini tekshirish; Google Play "Families" / App Store "Kids" qoidalari.
 
 ### P1 — mahsulot

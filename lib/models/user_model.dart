@@ -51,6 +51,9 @@ class UserModel extends Equatable {
     this.lastActiveDate,
     this.subscriptionStatus = SubscriptionStatus.trial,
     this.subscriptionExpiresAt,
+    this.trialStartedAt,
+    this.serverNowAtFetch,
+    this.deviceObservedAt,
     this.totalStudyMinutes = 0,
     this.cheatingWarnings = 0,
     this.telegramChatId,
@@ -70,27 +73,52 @@ class UserModel extends Equatable {
   final DateTime? lastActiveDate;
   final SubscriptionStatus subscriptionStatus;
   final DateTime? subscriptionExpiresAt;
+
+  /// Serverdagi sinov boshi. Kesh.
+  final DateTime? trialStartedAt;
+
+  /// So‘rov paytidagi server vaqti.
+  final DateTime? serverNowAtFetch;
+
+  /// Shu javob kelgan paytdagi qurilma vaqti. Faqat kesh yoshi uchun.
+  final DateTime? deviceObservedAt;
   final int totalStudyMinutes;
   final int cheatingWarnings;
 
   /// Ota-ona Telegram chat_id (Bot orqali xabar uchun).
   final String? telegramChatId;
 
-  /// Ro‘yxatdan o‘tganidan beri kunlar.
-  int get daysSinceRegistration {
-    return DateTime.now().difference(createdAt).inDays;
+  /// Sinov tugashiga qolgan kun. Server vaqti + faqat oldinga siljish.
+  int trialDaysLeftAt(DateTime deviceNow) {
+    final expires = subscriptionExpiresAt;
+    final serverNow = serverNowAtFetch;
+    final observed = deviceObservedAt;
+    if (expires == null || serverNow == null || observed == null) return 0;
+    final elapsed = deviceNow.difference(observed);
+    final forward = elapsed.isNegative ? Duration.zero : elapsed;
+    final effective = serverNow.add(forward);
+    if (!effective.isBefore(expires)) return 0;
+    final seconds = expires.difference(effective).inSeconds;
+    if (seconds <= 0) return 0;
+    return (seconds / Duration.secondsPerDay).ceil();
   }
 
-  /// Sinov kunlari qoldimi?
-  int get trialDaysLeft {
-    final left = AppConstantsLike.freeTrialDays - daysSinceRegistration;
-    return left < 0 ? 0 : left;
+  int get trialDaysLeft => trialDaysLeftAt(DateTime.now());
+
+  /// Soatni orqaga surish muddatni uzaytirmaydi.
+  bool hasAccessAt(DateTime deviceNow) {
+    final expires = subscriptionExpiresAt;
+    final serverNow = serverNowAtFetch;
+    final observed = deviceObservedAt;
+    if (expires == null || serverNow == null || observed == null) {
+      return false;
+    }
+    final elapsed = deviceNow.difference(observed);
+    final forward = elapsed.isNegative ? Duration.zero : elapsed;
+    return serverNow.add(forward).isBefore(expires);
   }
 
-  bool get hasAccessBeyondTrial {
-    if (daysSinceRegistration <= AppConstantsLike.freeTrialDays) return true;
-    return subscriptionStatus == SubscriptionStatus.active;
-  }
+  bool get hasAccessBeyondTrial => hasAccessAt(DateTime.now());
 
   UserModel copyWith({
     String? id,
@@ -107,6 +135,9 @@ class UserModel extends Equatable {
     DateTime? lastActiveDate,
     SubscriptionStatus? subscriptionStatus,
     DateTime? subscriptionExpiresAt,
+    DateTime? trialStartedAt,
+    DateTime? serverNowAtFetch,
+    DateTime? deviceObservedAt,
     int? totalStudyMinutes,
     int? cheatingWarnings,
     String? telegramChatId,
@@ -127,6 +158,9 @@ class UserModel extends Equatable {
       lastActiveDate: lastActiveDate ?? this.lastActiveDate,
       subscriptionStatus: subscriptionStatus ?? this.subscriptionStatus,
       subscriptionExpiresAt: subscriptionExpiresAt ?? this.subscriptionExpiresAt,
+      trialStartedAt: trialStartedAt ?? this.trialStartedAt,
+      serverNowAtFetch: serverNowAtFetch ?? this.serverNowAtFetch,
+      deviceObservedAt: deviceObservedAt ?? this.deviceObservedAt,
       totalStudyMinutes: totalStudyMinutes ?? this.totalStudyMinutes,
       cheatingWarnings: cheatingWarnings ?? this.cheatingWarnings,
       telegramChatId: clearTelegramChatId
@@ -150,6 +184,9 @@ class UserModel extends Equatable {
         'lastActiveDate': lastActiveDate?.toIso8601String(),
         'subscriptionStatus': subscriptionStatus.name,
         'subscriptionExpiresAt': subscriptionExpiresAt?.toIso8601String(),
+        'trialStartedAt': trialStartedAt?.toIso8601String(),
+        'serverNowAtFetch': serverNowAtFetch?.toIso8601String(),
+        'deviceObservedAt': deviceObservedAt?.toIso8601String(),
         'totalStudyMinutes': totalStudyMinutes,
         'cheatingWarnings': cheatingWarnings,
         'telegramChatId': telegramChatId,
@@ -177,6 +214,15 @@ class UserModel extends Equatable {
       ),
       subscriptionExpiresAt: json['subscriptionExpiresAt'] != null
           ? DateTime.parse(json['subscriptionExpiresAt'] as String)
+          : null,
+      trialStartedAt: json['trialStartedAt'] != null
+          ? DateTime.parse(json['trialStartedAt'] as String)
+          : null,
+      serverNowAtFetch: json['serverNowAtFetch'] != null
+          ? DateTime.parse(json['serverNowAtFetch'] as String)
+          : null,
+      deviceObservedAt: json['deviceObservedAt'] != null
+          ? DateTime.parse(json['deviceObservedAt'] as String)
           : null,
       totalStudyMinutes: json['totalStudyMinutes'] as int? ?? 0,
       cheatingWarnings: json['cheatingWarnings'] as int? ?? 0,
@@ -219,13 +265,11 @@ class UserModel extends Equatable {
         lastActiveDate,
         subscriptionStatus,
         subscriptionExpiresAt,
+        trialStartedAt,
+        serverNowAtFetch,
+        deviceObservedAt,
         totalStudyMinutes,
         cheatingWarnings,
         telegramChatId,
       ];
-}
-
-/// AppConstants ga bog‘lanishni model ichida yumshoq ushlash (circular import oldini).
-abstract final class AppConstantsLike {
-  static const int freeTrialDays = 7;
 }

@@ -1,7 +1,7 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:uuid/uuid.dart';
+import 'dart:async';
 
-import '../../../../core/constants/app_constants.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
 import '../../../../core/constants/app_strings.dart';
 import '../../../../models/user_model.dart';
 import '../../../../services/auth_service.dart';
@@ -13,15 +13,15 @@ class OnboardingCubit extends Cubit<OnboardingState> {
   OnboardingCubit({
     required AuthService authService,
     required StorageService storageService,
-    Uuid? uuid,
   })  : _auth = authService,
         _storage = storageService,
-        _uuid = uuid ?? const Uuid(),
         super(const OnboardingState());
 
   final AuthService _auth;
   final StorageService _storage;
-  final Uuid _uuid;
+  Timer? _resendTimer;
+
+  bool get devOtpHint => _auth is StubAuthService;
 
   void start() => emit(state.copyWith(
         step: OnboardingStep.name,
@@ -90,29 +90,54 @@ class OnboardingCubit extends Cubit<OnboardingState> {
     emit(state.copyWith(isLoading: true, clearError: true));
     try {
       await _auth.sendOtp(state.fullPhone);
+      _startResendCooldown();
       emit(state.copyWith(
         isLoading: false,
         otpSent: true,
         step: OnboardingStep.otp,
         otpCode: '',
+        resendSecondsLeft: 60,
+      ));
+    } on AuthFailure catch (error) {
+      emit(state.copyWith(
+        isLoading: false,
+        errorMessage: _messageFor(error),
       ));
     } catch (_) {
       emit(state.copyWith(
         isLoading: false,
-        errorMessage: AppStrings.somethingWrong,
+        errorMessage: AppStrings.otpNetwork,
       ));
     }
   }
 
   Future<void> resendOtp() async {
+    if (state.resendSecondsLeft > 0) {
+      emit(state.copyWith(
+        errorMessage: AppStrings.otpResendWait
+            .replaceAll('{n}', '${state.resendSecondsLeft}'),
+      ));
+      return;
+    }
+
     emit(state.copyWith(isLoading: true, clearError: true));
     try {
       await _auth.sendOtp(state.fullPhone);
-      emit(state.copyWith(isLoading: false, otpSent: true));
+      _startResendCooldown();
+      emit(state.copyWith(
+        isLoading: false,
+        otpSent: true,
+        resendSecondsLeft: 60,
+      ));
+    } on AuthFailure catch (error) {
+      emit(state.copyWith(
+        isLoading: false,
+        errorMessage: _messageFor(error),
+      ));
     } catch (_) {
       emit(state.copyWith(
         isLoading: false,
-        errorMessage: AppStrings.somethingWrong,
+        errorMessage: AppStrings.otpNetwork,
       ));
     }
   }
@@ -134,22 +159,12 @@ class OnboardingCubit extends Cubit<OnboardingState> {
         return;
       }
 
-      final now = DateTime.now();
-      final user = UserModel(
-        id: _auth.currentUserId ?? _uuid.v4(),
+      final user = await _auth.completeSignUp(
         studentName: state.studentName.trim(),
         grade: state.grade,
         targetSchool: state.targetSchool.trim(),
         parentPhone: state.fullPhone,
-        createdAt: now,
-        lastActiveDate: now,
-        subscriptionStatus: SubscriptionStatus.trial,
-        // 7 kunlik bepul sinov.
-        subscriptionExpiresAt:
-            now.add(const Duration(days: AppConstants.freeTrialDays)),
-        coins: 10, // Welcome bonus
-        level: 1,
-        streakDays: 1,
+        welcomeCoins: 10,
       );
 
       await _storage.completeOnboarding(user);
@@ -159,11 +174,42 @@ class OnboardingCubit extends Cubit<OnboardingState> {
         step: OnboardingStep.done,
         completedUser: user,
       ));
+    } on AuthFailure catch (error) {
+      emit(state.copyWith(
+        isLoading: false,
+        errorMessage: _messageFor(error),
+      ));
     } catch (_) {
       emit(state.copyWith(
         isLoading: false,
-        errorMessage: AppStrings.somethingWrong,
+        errorMessage: AppStrings.otpNetwork,
       ));
     }
+  }
+
+  void _startResendCooldown() {
+    _resendTimer?.cancel();
+    _resendTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      final next = state.resendSecondsLeft - 1;
+      if (next <= 0) {
+        timer.cancel();
+        emit(state.copyWith(resendSecondsLeft: 0));
+      } else {
+        emit(state.copyWith(resendSecondsLeft: next));
+      }
+    });
+  }
+
+  String _messageFor(AuthFailure error) {
+    return switch (error.kind) {
+      AuthFailureKind.network => AppStrings.otpNetwork,
+      AuthFailureKind.invalidCode => AppStrings.otpError,
+    };
+  }
+
+  @override
+  Future<void> close() {
+    _resendTimer?.cancel();
+    return super.close();
   }
 }

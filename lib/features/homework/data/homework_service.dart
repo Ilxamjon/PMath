@@ -92,7 +92,8 @@ class HomeworkService {
     required VisionAnalysisResult analysis,
   }) async {
     final updated = homework.copyWith(
-      imagePath: analysis.imagePath,
+      imagePath: null,
+      clearImagePath: true,
       extractedSteps: analysis.steps,
       ocrRawText: analysis.rawText,
       visionConfidence: analysis.confidence,
@@ -101,6 +102,20 @@ class HomeworkService {
       type: HomeworkType.scanned,
       aiFeedbackUz:
           'Vision AI (${analysis.modelName}) ${analysis.steps.length} ta qadam ajratdi.',
+    );
+    await _storage.upsertHomework(updated);
+    return updated;
+  }
+
+  /// Tasdiqlangan qadamlarni baholashdan oldin saqlaydi.
+  Future<HomeworkModel> replaceExtractedSteps({
+    required HomeworkModel homework,
+    required List<String> steps,
+  }) async {
+    final updated = homework.copyWith(
+      extractedSteps: steps,
+      clearImagePath: true,
+      status: HomeworkStatus.grading,
     );
     await _storage.upsertHomework(updated);
     return updated;

@@ -293,6 +293,10 @@ abstract final class AppStrings {
   static const String visionJsonPreview = 'JSON qadamlar';
   static const String visionReadyForGrade =
       'Qadamlar tayyor — AI baholashga o‘ting.';
+  static const String visionConfirmTitle = 'Qadamlarni tasdiqlang';
+  static const String visionConfirmHint =
+      'Ishonch past. Har bir qadamni tekshiring va kerak bo‘lsa tuzating.';
+  static const String visionConfirmGrade = 'Tasdiqlab baholash';
   static const String visionGoGrade = 'Baholashga o‘tish';
   static const String visionBackScanner = 'Skanerga qaytish';
   static const String visionNoCamera = 'Kamera mavjud emas';

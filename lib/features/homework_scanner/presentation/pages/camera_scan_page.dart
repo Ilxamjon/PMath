@@ -14,6 +14,7 @@ import '../../../../models/homework_model.dart';
 import '../../../../services/vision_ai_service.dart';
 import '../../../homework/data/homework_service.dart';
 import 'scan_result_page.dart';
+import 'step_confirm_page.dart';
 
 /// Kamera preview + galereya/demo → Vision AI tahlil.
 class CameraScanPage extends StatefulWidget {
@@ -80,7 +81,7 @@ class _CameraScanPageState extends State<CameraScanPage> {
   }
 
   Future<String> _persistImage(String sourcePath) async {
-    final dir = await getApplicationDocumentsDirectory();
+    final dir = await getTemporaryDirectory();
     final scansDir = Directory(p.join(dir.path, 'scans'));
     if (!await scansDir.exists()) {
       await scansDir.create(recursive: true);
@@ -121,7 +122,7 @@ class _CameraScanPageState extends State<CameraScanPage> {
 
   Future<void> _demoScan() async {
     // Kamera yo‘q muhit: bo‘sh fayl yo‘li bilan stub tahlil.
-    final dir = await getApplicationDocumentsDirectory();
+    final dir = await getTemporaryDirectory();
     final path = p.join(
       dir.path,
       'scans',
@@ -137,7 +138,9 @@ class _CameraScanPageState extends State<CameraScanPage> {
     if (path == null) return;
     setState(() => _analyzing = true);
     try {
-      final vision = context.read<VisionAiService>();
+      final vision = kDebugMode && path.endsWith('.txt')
+          ? StubVisionAiService()
+          : context.read<VisionAiService>();
       final homeworkService = context.read<HomeworkService>();
       final analysis = await vision.analyzeNotebookPage(
         imagePath: path,
@@ -148,13 +151,16 @@ class _CameraScanPageState extends State<CameraScanPage> {
         analysis: analysis,
       );
       if (!mounted) return;
+      final page = mustConfirmSteps(analysis)
+          ? StepConfirmPage(homework: updated, analysis: analysis)
+          : ScanResultPage(homework: updated, analysis: analysis);
       await Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (_) => ScanResultPage(
-            homework: updated,
-            analysis: analysis,
-          ),
-        ),
+        MaterialPageRoute(builder: (_) => page),
+      );
+    } on VisionAnalysisException catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error.messageUz)),
       );
     } catch (_) {
       if (!mounted) return;
@@ -162,6 +168,10 @@ class _CameraScanPageState extends State<CameraScanPage> {
         const SnackBar(content: Text(AppStrings.somethingWrong)),
       );
     } finally {
+      final file = File(path);
+      if (await file.exists()) {
+        await file.delete();
+      }
       if (mounted) setState(() => _analyzing = false);
     }
   }
@@ -233,20 +243,21 @@ class _CameraScanPageState extends State<CameraScanPage> {
                             ),
                           ),
                           const SizedBox(width: 10),
-                          Expanded(
-                            child: OutlinedButton.icon(
-                              onPressed: _analyzing ? null : _demoScan,
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: AppColors.textOnPrimary,
-                                side: const BorderSide(
-                                  color: AppColors.primaryLight,
+                          if (kDebugMode)
+                            Expanded(
+                              child: OutlinedButton.icon(
+                                onPressed: _analyzing ? null : _demoScan,
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: AppColors.textOnPrimary,
+                                  side: const BorderSide(
+                                    color: AppColors.primaryLight,
+                                  ),
+                                  minimumSize: const Size.fromHeight(48),
                                 ),
-                                minimumSize: const Size.fromHeight(48),
+                                icon: const Icon(Icons.science),
+                                label: const Text(AppStrings.visionDemoScan),
                               ),
-                              icon: const Icon(Icons.science),
-                              label: const Text(AppStrings.visionDemoScan),
                             ),
-                          ),
                         ],
                       ),
                       if (_cameraFailed)

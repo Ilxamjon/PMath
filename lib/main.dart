@@ -56,7 +56,11 @@ Future<void> main() async {
     storage: storage,
     alerts: parentAlerts,
   );
-  final visionAi = EdgeVisionAiService(gateway: gateway);
+  final visionAi = createVisionService(
+    allowStub: kDebugMode,
+    cloudReady: gateway.isReady,
+    gateway: gateway,
+  );
   final tutor = AiTutorService(gateway: gateway);
   final gradingAi = LocalAiGradingService();
 

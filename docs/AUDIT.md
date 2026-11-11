@@ -29,7 +29,7 @@ Sana: 2026-11-11. Ko‘rib chiqilgan: README, ROADMAP, `pubspec.yaml`, `lib/serv
 - [ ] **Bolalar ma’lumoti:** ota-ona roziligi, yuz tahlilini faqat qurilmada bajarish, rasmlarni saqlash muddati, O‘zbekistonning shaxsiy ma’lumotlar to‘g‘risidagi qonuni talablarini tekshirish; Google Play "Families" / App Store "Kids" qoidalari.
 
 ### P1 — mahsulot
-- [ ] **Real Vision OCR** (Gemini Vision) + ishonch darajasi past bo‘lsa ota-ona tasdiqlash ekrani. `vision-analyze` funksiyasi yozildi; sessiya yoki kalit bo‘lmasa `StubVisionAiService` ishlaydi. Tasdiqlash ekrani hali yo‘q.
+- [x] **Real Vision OCR.** `RemoteVisionAiService` rasmni siqib `vision-analyze` ga yuboradi. Yaroqsiz JSON bir marta qayta uriniladi, keyin xato. `confidence < 0.75` da qadamlar tasdiqlanadi, avtomatik baholanmaydi. Rasm saqlanmaydi. Stub faqat debug.
 - [ ] **Telegram ulash:** chat ID ni qo‘lda kiritish o‘rniga `t.me/<bot>?start=<kod>` deep link.
 - [ ] **Haqiqiy liga:** reyting uchun backend (hozir faqat lokal XP).
 - [ ] **TTS/STT:** `uz-UZ` ovozi qurilmaga bog‘liq — real telefonlarda sinab, matn rejimiga fallback.

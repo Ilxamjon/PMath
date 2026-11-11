@@ -14,7 +14,7 @@ class VoiceAiReply {
   final String provider;
 }
 
-/// Ovozli AI yordamchi — Gemini (agar kalit bor) yoki lokal Sokratik AI.
+/// Ovozli AI yordamchi — bulutdagi `ai-coach` yoki lokal Sokratik AI.
 class VoiceAiCoach {
   VoiceAiCoach({AiTutorService? tutor}) : _tutor = tutor ?? AiTutorService();
 

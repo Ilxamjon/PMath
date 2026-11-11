@@ -1,5 +1,9 @@
+import 'dart:convert';
+import 'dart:io';
+
 import '../models/homework_model.dart';
 import '../models/vision_analysis_result.dart';
+import 'supabase_gateway.dart';
 
 /// Vision AI / OCR abstraksiyasi.
 ///
@@ -53,7 +57,7 @@ class StubVisionAiService implements VisionAiService {
       // Oxirgi qadamda ataylab xato — baholash demosi uchun.
       return [
         'Berilgan: $a × $b',
-        '${a}ni ${b} marta qo‘shish',
+        '${a}ni $b marta qo‘shish',
         'Oraliq: ${a * (b - 1)}',
         'Javob: ${a * b + 3}',
       ];
@@ -80,5 +84,100 @@ class StubVisionAiService implements VisionAiService {
       'Yechim qadamlarini yozdim',
       'Javobni tekshirdim',
     ];
+  }
+}
+
+/// `vision-analyze` Edge Function. Xato yoki offline bo‘lsa stub ishlaydi.
+class EdgeVisionAiService implements VisionAiService {
+  EdgeVisionAiService({
+    required EdgeInvoker gateway,
+    VisionAiService? fallback,
+  })  : _gateway = gateway,
+        _fallback = fallback ?? StubVisionAiService();
+
+  final EdgeInvoker _gateway;
+  final VisionAiService _fallback;
+
+  static const _maxBytes = 1000000;
+
+  @override
+  Future<VisionAnalysisResult> analyzeNotebookPage({
+    required String imagePath,
+    required HomeworkModel homework,
+  }) async {
+    if (!_gateway.isReady) {
+      return _fallback.analyzeNotebookPage(
+        imagePath: imagePath,
+        homework: homework,
+      );
+    }
+
+    try {
+      final mime = _mime(imagePath);
+      final file = File(imagePath);
+      if (mime == null || !await file.exists()) {
+        return await _fallback.analyzeNotebookPage(
+          imagePath: imagePath,
+          homework: homework,
+        );
+      }
+      final bytes = await file.readAsBytes();
+      if (bytes.isEmpty || bytes.length > _maxBytes) {
+        return await _fallback.analyzeNotebookPage(
+          imagePath: imagePath,
+          homework: homework,
+        );
+      }
+
+      final result = await _gateway.invoke(
+        'vision-analyze',
+        {
+          'imageBase64': base64Encode(bytes),
+          'mimeType': mime,
+          'titleUz': homework.titleUz,
+        },
+        timeout: const Duration(seconds: 25),
+      );
+      final json = result?.json;
+      if (result == null || result.statusCode != 200 || json == null) {
+        return await _fallback.analyzeNotebookPage(
+          imagePath: imagePath,
+          homework: homework,
+        );
+      }
+
+      final steps = (json['steps'] as List<dynamic>?)
+              ?.whereType<String>()
+              .where((step) => step.trim().isNotEmpty)
+              .toList() ??
+          const <String>[];
+      if (steps.isEmpty) {
+        return await _fallback.analyzeNotebookPage(
+          imagePath: imagePath,
+          homework: homework,
+        );
+      }
+
+      return VisionAnalysisResult(
+        imagePath: imagePath,
+        rawText: json['rawText'] as String? ?? steps.join('\n'),
+        steps: steps,
+        confidence: (json['confidence'] as num?)?.toDouble() ?? 0.5,
+        modelName: json['modelName'] as String? ?? 'gemini-2.0-flash',
+      );
+    } catch (_) {
+      return await _fallback.analyzeNotebookPage(
+        imagePath: imagePath,
+        homework: homework,
+      );
+    }
+  }
+
+  String? _mime(String path) {
+    final lower = path.toLowerCase();
+    if (lower.endsWith('.png')) return 'image/png';
+    if (lower.endsWith('.webp')) return 'image/webp';
+    if (lower.endsWith('.jpg') || lower.endsWith('.jpeg')) return 'image/jpeg';
+    return null;
   }
 }

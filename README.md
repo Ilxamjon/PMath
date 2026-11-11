@@ -9,18 +9,20 @@ flutter pub get
 flutter run
 ```
 
-Ixtiyoriy konfiguratsiya (`--dart-define`):
+Ixtiyoriy konfiguratsiya (`--dart-define`). Ilovada faqat shu ikkisi qoladi:
 
 | Kalit | Vazifasi |
 |-------|----------|
-| `GEMINI_API_KEY` | Bulutdagi AI tutor (bo‘lmasa lokal Sokratik qoidalar ishlaydi) |
-| `GEMINI_MODEL` | Gemini model nomi (standart: `gemini-2.0-flash`) |
-| `TELEGRAM_BOT_TOKEN` | Ota-onaga Telegram ogohlantirishlari |
-| `TELEGRAM_CHAT_ID` | Standart chat ID (ixtiyoriy) |
+| `SUPABASE_URL` | Supabase loyiha manzili |
+| `SUPABASE_ANON_KEY` | Ochiq anon kalit (bu maxfiy kalit emas) |
 
-> ⚠️ **Xavfsizlik:** `--dart-define` qiymatlari APK ichiga yoziladi va chiqarib olinishi mumkin.
-> Faqat development uchun ishlating. Production da Gemini/Telegram/Vision chaqiruvlari backend
-> (Supabase Edge Function) orqali o‘tishi kerak. Batafsil: [docs/AUDIT.md](docs/AUDIT.md).
+`GEMINI_API_KEY` va `TELEGRAM_BOT_TOKEN` APK ichiga yozilmaydi. Ularni Supabase secrets ga qo‘ying (`ai-coach`, `vision-analyze`, `telegram-notify`). Model nomi funksiya muhitida, standart `gemini-2.0-flash`.
+
+Anonim kirish yoqilgan bo‘lishi kerak (Authentication → Anonymous). Telefon OTP alohida ish. URL yoki anon kalit bo‘lmasa, ustoz, Telegram va ko‘rish lokal rejimda qoladi.
+
+Migratsiya: `supabase/migrations/20261111120000_edge_rate_limits.sql`.
+
+> Production chaqiruvlari Supabase Edge Function orqali o‘tadi. Batafsil: [docs/AUDIT.md](docs/AUDIT.md).
 
 ## Arxitektura
 
@@ -28,7 +30,7 @@ Ixtiyoriy konfiguratsiya (`--dart-define`):
 lib/
   core/          # ranglar, tema, konstantalar, utils (uz_text, iso_week, mastery_helper), umumiy widgetlar
   models/        # User, Question, StudyPlan, Lesson, Homework, ...
-  services/      # storage, auth (stub), gamification, ai_tutor, vision_ai (stub), parent_alert, tts/stt
+  services/      # storage, auth (stub), gamification, ai_tutor, vision_ai (edge + lokal fallback), parent_alert, tts/stt
   features/      # feature-first Clean Architecture
     onboarding/  diagnostic/  study_plan/  learning_map/  lesson/  practice/
     homework/  homework_scanner/  grading/  error_analysis/  mastery_lock/
@@ -66,4 +68,4 @@ CI: `.github/workflows/flutter_ci.yml` (push va pull request da `analyze` + `tes
 - **Cursor:** agent vazifa tugagach `.cursor/hooks.json` orqali `scripts/sync-to-github.ps1` ishlaydi (o‘zgarish bo‘lsa commit + push).
 - Qo‘lda: `powershell -File scripts/sync-to-github.ps1`
 
-Maxfiy kalitlar (`GEMINI_API_KEY`, `TELEGRAM_BOT_TOKEN`) repoga kiritilmaydi.
+Maxfiy kalitlar (`GEMINI_API_KEY`, `TELEGRAM_BOT_TOKEN`) faqat Supabase secrets da. Repoga va APK ga kiritilmaydi.

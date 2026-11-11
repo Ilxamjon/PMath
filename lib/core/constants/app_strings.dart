@@ -67,8 +67,7 @@ abstract final class AppStrings {
   static const String masteryPercent = 'O‘zlashtirish';
   static const String telegramAlerts = 'Telegram ogohlantirishlar';
   static const String telegramStatusOn = 'Bot ulangan';
-  static const String telegramStatusOff =
-      'Chat ID kiriting yoki TELEGRAM_BOT_TOKEN bering';
+  static const String telegramStatusOff = 'Chat ID kiriting';
   static const String telegramChatIdHint = 'Telegram chat_id';
   static const String telegramSave = 'Saqlash';
   static const String telegramTest = 'Test xabar yuborish';
@@ -78,6 +77,8 @@ abstract final class AppStrings {
   static const String telegramTestSent = 'Test xabar yuborildi / jurnalga yozildi';
   static const String telegramHowTo =
       'Botga /start yozing, chat_id ni @userinfobot dan oling.';
+  static const String telegramCloudOff =
+      'Bulut ulanmagan yoki chat ID yo‘q. Xabar lokal jurnalga yoziladi.';
   static const String parentLessonsProgress = 'Darslar progressi';
   static const String parentOverdueAlerted =
       '{n} ta kechikkan vazifa uchun ota-onaga xabar yuborildi';

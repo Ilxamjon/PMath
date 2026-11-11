@@ -11,9 +11,11 @@ import 'features/onboarding/presentation/app_bootstrap.dart';
 import 'features/proctoring/domain/proctoring_guard.dart';
 import 'features/study_plan/data/study_plan_repository.dart';
 import 'features/study_plan/domain/ai_study_plan_generator.dart';
+import 'services/ai_tutor_service.dart';
 import 'services/auth_service.dart';
 import 'services/parent_alert_service.dart';
 import 'services/storage_service.dart';
+import 'services/supabase_gateway.dart';
 import 'services/stt_service.dart';
 import 'services/tts_service.dart';
 import 'services/vision_ai_service.dart';
@@ -29,6 +31,8 @@ Future<void> main() async {
   );
 
   final storage = await StorageService.init();
+  final gateway = SupabaseGateway();
+  await gateway.ensureSession();
   final auth = StubAuthService();
   final diagnosticRepo = LocalDiagnosticRepository(storage);
   final studyPlanRepo = LocalStudyPlanRepository(
@@ -38,12 +42,16 @@ Future<void> main() async {
   final tts = FlutterTtsService();
   final stt = DeviceSttService();
   final proctoring = LocalProctoringGuard();
-  final parentAlerts = TelegramParentAlertService(storage: storage);
+  final parentAlerts = TelegramParentAlertService(
+    storage: storage,
+    gateway: gateway,
+  );
   final homeworkService = HomeworkService(
     storage: storage,
     alerts: parentAlerts,
   );
-  final visionAi = StubVisionAiService();
+  final visionAi = EdgeVisionAiService(gateway: gateway);
+  final tutor = AiTutorService(gateway: gateway);
   final gradingAi = LocalAiGradingService();
 
   runApp(
@@ -57,6 +65,7 @@ Future<void> main() async {
         RepositoryProvider<SttService>.value(value: stt),
         RepositoryProvider<ProctoringGuard>.value(value: proctoring),
         RepositoryProvider<ParentAlertService>.value(value: parentAlerts),
+        RepositoryProvider<AiTutorService>.value(value: tutor),
         RepositoryProvider<HomeworkService>.value(value: homeworkService),
         RepositoryProvider<VisionAiService>.value(value: visionAi),
         RepositoryProvider<AiGradingService>.value(value: gradingAi),

@@ -1,4 +1,4 @@
-/// O‘zbek lotin matnini taqqoslash va AI promptiga xavfsiz uzatish yordamchilari.
+// O‘zbek lotin matnini taqqoslash va AI promptiga xavfsiz uzatish yordamchilari.
 
 /// Apostrof variantlari: ʻ ʼ ‘ ’ ` ´ ′ — hammasi oddiy `'` ga keltiriladi.
 final RegExp _apostrophes = RegExp('[\u02BB\u02BC\u2018\u2019\u0060\u00B4\u2032]');

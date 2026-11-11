@@ -9,6 +9,7 @@ import '../../../../models/lesson_model.dart';
 import '../../../../models/study_plan_bundle.dart';
 import '../../../../models/study_plan_model.dart';
 import '../../../../models/user_model.dart';
+import '../../../../services/ai_tutor_service.dart';
 import '../../../../services/parent_alert_service.dart';
 import '../../../../services/storage_service.dart';
 import '../../../../services/stt_service.dart';
@@ -17,6 +18,7 @@ import '../../../exam/presentation/pages/exam_page.dart';
 import '../../../gamification/presentation/pages/gamification_hub_page.dart';
 import '../../../lesson/presentation/cubit/lesson_cubit.dart';
 import '../../../lesson/presentation/pages/lesson_room_page.dart';
+import '../../../voice_ai/domain/voice_ai_coach.dart';
 import '../../../mastery_lock/presentation/widgets/mastery_lock_dialogs.dart';
 import '../../../proctoring/domain/proctoring_guard.dart';
 import '../../../subscription/presentation/pages/paywall_page.dart';
@@ -174,6 +176,9 @@ class _LearningMapPageState extends State<LearningMapPage> {
             proctoring: proctoring,
             storage: storage,
             parentAlerts: context.read<ParentAlertService>(),
+            voiceCoach: VoiceAiCoach(
+              tutor: context.read<AiTutorService>(),
+            ),
           )..start(),
           child: const LessonRoomPage(),
         ),

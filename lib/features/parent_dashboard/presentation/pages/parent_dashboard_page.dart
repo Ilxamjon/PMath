@@ -5,7 +5,6 @@ import 'package:percent_indicator/circular_percent_indicator.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_strings.dart';
-import '../../../../core/constants/telegram_config.dart';
 import '../../../../core/utils/mastery_helper.dart';
 import '../../../../models/homework_model.dart';
 import '../../../../models/lesson_model.dart';
@@ -363,10 +362,9 @@ class _ParentDashboardPageState extends State<ParentDashboardPage> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  TelegramConfig.hasBotToken
+                  alerts.isTelegramConfigured
                       ? AppStrings.telegramHowTo
-                      : 'Demo: token bo‘lmasa xabar lokal jurnalga yoziladi. '
-                          'Token: --dart-define=TELEGRAM_BOT_TOKEN=...',
+                      : AppStrings.telegramCloudOff,
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
                 const SizedBox(height: 12),

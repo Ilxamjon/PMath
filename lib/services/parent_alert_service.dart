@@ -1,13 +1,10 @@
-import 'dart:convert';
-
-import 'package:http/http.dart' as http;
 import 'package:uuid/uuid.dart';
 
-import '../core/constants/telegram_config.dart';
 import '../models/homework_model.dart';
 import '../models/parent_alert_log.dart';
 import '../models/user_model.dart';
 import 'storage_service.dart';
+import 'supabase_gateway.dart';
 
 /// Ota-ona ogohlantirishlari — Telegram Bot + lokal jurnal.
 abstract class ParentAlertService {
@@ -135,14 +132,14 @@ class StubParentAlertService implements ParentAlertService {
 class TelegramParentAlertService implements ParentAlertService {
   TelegramParentAlertService({
     required StorageService storage,
-    http.Client? httpClient,
+    EdgeInvoker? gateway,
     Uuid? uuid,
   })  : _storage = storage,
-        _http = httpClient ?? http.Client(),
+        _gateway = gateway,
         _uuid = uuid ?? const Uuid();
 
   final StorageService _storage;
-  final http.Client _http;
+  final EdgeInvoker? _gateway;
   final Uuid _uuid;
 
   @override
@@ -150,14 +147,13 @@ class TelegramParentAlertService implements ParentAlertService {
 
   @override
   bool get isTelegramConfigured =>
-      TelegramConfig.hasBotToken &&
+      (_gateway?.isReady ?? false) &&
       (_resolveChatId(_storage.getUser())?.isNotEmpty ?? false);
 
   String? _resolveChatId(UserModel? user) {
     final fromUser = user?.telegramChatId?.trim();
-    if (fromUser != null && fromUser.isNotEmpty) return fromUser;
-    final def = TelegramConfig.defaultChatId.trim();
-    return def.isEmpty ? null : def;
+    if (fromUser == null || fromUser.isEmpty) return null;
+    return fromUser;
   }
 
   Future<ParentAlertLogEntry> _dispatch({
@@ -170,14 +166,14 @@ class TelegramParentAlertService implements ParentAlertService {
     var delivered = false;
     String? error;
 
-    if (TelegramConfig.hasBotToken && chatId != null) {
+    if ((_gateway?.isReady ?? false) && chatId != null) {
       channel = 'telegram';
       try {
         delivered = await _sendTelegram(
           chatId: chatId,
           text: _formatTelegram(user: user, type: type, body: messageUz),
         );
-        if (!delivered) error = 'Telegram API rad etdi';
+        if (!delivered) error = 'Telegram yuborilmadi';
       } catch (e) {
         error = e.toString();
         delivered = false;
@@ -216,19 +212,19 @@ class TelegramParentAlertService implements ParentAlertService {
     required String chatId,
     required String text,
   }) async {
-    final uri = Uri.parse(TelegramConfig.apiUrl('sendMessage'));
-    final res = await _http.post(
-      uri,
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'chat_id': chatId,
+    final gateway = _gateway;
+    if (gateway == null) return false;
+    final result = await gateway.invoke(
+      'telegram-notify',
+      {
+        'chatId': chatId,
         'text': text,
-        'parse_mode': 'HTML',
-      }),
+      },
+      timeout: const Duration(seconds: 12),
     );
-    if (res.statusCode != 200) return false;
-    final body = jsonDecode(res.body) as Map<String, dynamic>;
-    return body['ok'] == true;
+    return result != null &&
+        result.statusCode == 200 &&
+        result.json?['ok'] == true;
   }
 
   @override

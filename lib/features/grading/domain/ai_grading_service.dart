@@ -227,7 +227,7 @@ class LocalAiGradingService implements AiGradingService {
         final b = int.parse(m.group(2)!);
         return [
           '$a × $b',
-          '${a}ni ${b} marta qo‘shish',
+          '${a}ni $b marta qo‘shish',
           'Javob: ${a * b}',
         ];
       }

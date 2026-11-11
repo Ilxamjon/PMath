@@ -64,6 +64,7 @@ void main() {
       RepositoryProvider<SttService>.value(value: StubSttService()),
       RepositoryProvider<ProctoringGuard>.value(value: StubProctoringGuard()),
       RepositoryProvider<ParentAlertService>.value(value: alerts),
+      RepositoryProvider<AiTutorService>.value(value: AiTutorService()),
       RepositoryProvider<HomeworkService>.value(
         value: HomeworkService(storage: storage, alerts: alerts),
       ),

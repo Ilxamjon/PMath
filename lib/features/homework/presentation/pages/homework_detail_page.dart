@@ -255,9 +255,11 @@ class HomeworkDetailPage extends StatelessWidget {
       Navigator.of(context).pop(homework);
       return;
     }
+    final navigator = Navigator.of(context);
     await context.read<StorageService>().setPendingShellTab(1);
+    if (!context.mounted) return;
     AppShellNav.openScanner();
-    Navigator.of(context).popUntil((r) => r.isFirst);
+    navigator.popUntil((r) => r.isFirst);
   }
 
   String _dueLabel(HomeworkModel hw) {

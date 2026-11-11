@@ -1,0 +1,59 @@
+---
+description: PMath doimiy qoidalari — Flutter, o‘zbek UI, Clean Architecture, xavfsizlik
+alwaysApply: true
+---
+
+# PMath
+
+Flutter ilovasi: 3–4-sinf o‘zbek bolalari uchun gamified matematika ustozi. Foydalanuvchiga ko‘rinadigan matn faqat o‘zbek lotin yozuvida.
+
+## Arxitektura
+
+- Feature-first Clean Architecture: `lib/features/<nom>/{data,domain,presentation}`.
+- State faqat `flutter_bloc` (Bloc yoki Cubit).
+
+## Maxfiylik
+
+API key, bot token va boshqa sirlar kodga, commitga yoki repoga yozilmaydi. Qiymat `--dart-define` yoki gitga kirmaydigan mahalliy konfiguratsiyadan olinadi.
+
+```dart
+// yomon
+const apiKey = 'AIzaSy-secret';
+
+// to‘g‘ri
+const apiKey = String.fromEnvironment('GEMINI_API_KEY');
+```
+
+## Tashqi servislar
+
+Tashqi servis abstrakt sinf orqali chaqiriladi. Stub va real implementatsiya alohida.
+
+```dart
+abstract class AiTutor {
+  Future<String> reply(String prompt);
+}
+
+class StubAiTutor implements AiTutor { /* lokal qoidalar */ }
+class GeminiAiTutor implements AiTutor { /* bulut */ }
+```
+
+## O‘zbek matn
+
+Taqqoslashdan oldin har doim `normalizeUz()` (`lib/core/utils/uz_text.dart`).
+
+```dart
+if (normalizeUz(answer) == normalizeUz('to‘g‘ri')) {
+  // to‘g‘ri, to'g'ri va toʻgʻri bir xil chiqadi
+}
+```
+
+## Tekshiruv
+
+Kod o‘zgargach `flutter analyze` va `flutter test` o‘tishi shart. Xato bo‘lsa tuzat; o‘tkazib yuborma.
+
+## Chegara
+
+- Katta o‘zgarishdan oldin reja yoz va tasdiqni kut.
+- `git push --force` qilma. `main` ga to‘g‘ridan-to‘g‘ri push qilma.
+- So‘ralmagan faylni o‘zgartirma.
+- Kodni o‘chirishdan oldin `grep` bilan ishlatilmasligini isbotla.

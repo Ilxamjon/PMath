@@ -69,6 +69,9 @@ abstract class ProctoringGuard {
 
 /// Lokal guard: front kamera + hayot sikli + yorug‘lik asosida yuz mavjudligi.
 ///
+/// Yuz tahlili faqat shu qurilmada. Kadr faylga yozilmaydi, tarmoqqa
+/// yuborilmaydi va maydonlarda saqlanmaydi — oqimdan faqat yorug‘lik soni qoladi.
+///
 /// Kameradan kelayotgan kadrlarning markaziy yorug‘ligi tahlil qilinadi:
 /// qorong‘i/tekis kadr = yuz yo‘q; hayotiy o‘zgaruvchanlik = o‘quvchi qaragan.
 class LocalProctoringGuard
@@ -77,7 +80,11 @@ class LocalProctoringGuard
   LocalProctoringGuard({
     this.enableDemoViolations = false,
     this.monitorInterval = const Duration(seconds: 4),
+    this.cameraAllowed,
   });
+
+  /// false bo‘lsa kamera ochilmaydi. null — ruxsat berilgan (test).
+  final bool Function()? cameraAllowed;
 
   /// true bo‘lsa, qo‘shimcha demo violation (test).
   final bool enableDemoViolations;
@@ -116,6 +123,10 @@ class LocalProctoringGuard
 
   @override
   void startSession({required String lessonId}) {
+    if (cameraAllowed != null && !cameraAllowed!()) {
+      if (_active) endSession();
+      return;
+    }
     if (_active) endSession();
     _lessonId = lessonId;
     _active = true;
@@ -209,6 +220,7 @@ class LocalProctoringGuard
       _streaming = true;
       await controller.startImageStream((image) {
         if (!_active || _paused) return;
+        // `image` bu yerdan chiqmaydi: faqat o‘rtacha yorug‘lik hisoblanadi.
         final luma = _centerLuma(image);
         _lastLuma = luma;
         _lastFrameOkAt = DateTime.now();

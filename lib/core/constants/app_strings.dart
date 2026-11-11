@@ -389,6 +389,67 @@ abstract final class AppStrings {
   static const String gamificationAvatarUnlocked =
       'Yangi avatar: {name}';
 
+  // —— Maxfiylik (qoralama matn, yuridik tasdiq kutilmoqda) ——
+  static const String privacyDraft =
+      'Qoralama matn — advokat tasdig‘ini kutmoqda.';
+  static const String privacyTitle = 'Ota-ona roziligi';
+  static const String privacySettingsTitle = 'Sozlamalar';
+  static const String privacyAgree = 'Roziman';
+  static const String privacyDecline = 'Hozircha rozimasman';
+  static const String privacyConsentMissing =
+      'Avval ota-ona roziligini tanlang';
+  static const String privacyCameraOff =
+      'Rozilik yo‘q: kamera, yuz tekshiruvi va rasm yuborish o‘chiq.';
+  static const String privacyStatusOn = 'Rozilik berilgan';
+  static const String privacyStatusOff = 'Rozilik berilmagan';
+  static const String privacyStatusMissing = 'Rozilik hali so‘ralmagan';
+  static const String privacyWhen = 'Qaror vaqti';
+  static const String privacyCollected = 'Nima yig‘iladi';
+  static const String privacyWhy = 'Nima uchun';
+  static const String privacyKeep = 'Qancha saqlanadi';
+  static const String privacyNameTitle = 'Ism';
+  static const String privacyNameWhy =
+      'Dars va ota-ona hisobotida bolani ko‘rsatish uchun.';
+  static const String privacyNameKeep = 'Hisob o‘chirilgunga qadar.';
+  static const String privacyGradeTitle = 'Sinf';
+  static const String privacyGradeWhy = '3- yoki 4-sinf darajasidagi darslar uchun.';
+  static const String privacyGradeKeep = 'Hisob o‘chirilgunga qadar.';
+  static const String privacyPhoneTitle = 'Ota-ona telefoni';
+  static const String privacyPhoneWhy =
+      'Kirish kodi va ota-onaga ogohlantirish uchun.';
+  static const String privacyPhoneKeep = 'Hisob o‘chirilgunga qadar.';
+  static const String privacyImageTitle = 'Daftar rasmlari';
+  static const String privacyImageWhy =
+      'Yozma yechimni o‘qish uchun. Rasm tahlil paytida modelga yuboriladi.';
+  static const String privacyImageKeep =
+      'Tahlildan keyin telefonda o‘chiriladi. Serverda rasm fayli saqlanmaydi.';
+  static const String privacyFaceTitle = 'Kamera va yuz tekshiruvi';
+  static const String privacyFaceWhy =
+      'Dars va imtihonda bola ekranga qarayotganini shu telefonda tekshirish uchun.';
+  static const String privacyFaceKeep =
+      'Kadr saqlanmaydi va hech qayerga yuborilmaydi.';
+  static const String privacyDeclineHint =
+      'Rozilik bermasangiz ham darslar ochiladi. Kamera, yuz tekshiruvi va daftar rasmini yuborish o‘chiq qoladi.';
+  static const String privacyOpenSettings = 'Maxfiylik va ma’lumotlar';
+  static const String privacyDelete = 'Ma’lumotlarimni o‘chirish';
+  static const String privacyDeleteTitle = 'Hammasini o‘chirish?';
+  static const String privacyDeleteBody =
+      'Telefondagi darslar, rasmlar va serverdagi hisob o‘chiriladi. Bu qaytarilmaydi.';
+  static const String privacyDeleteConfirm = 'O‘chirish';
+  static const String privacyDeleteFailed =
+      'Serverdagi hisob o‘chmadi. Telefondagi ma’lumot saqlanib qoldi. Qayta urinib ko‘ring.';
+  static const String privacyDeleteLocalOnly =
+      'Server hisobi topilmadi. Telefondagi ma’lumot o‘chirildi.';
+  static const String privacySdkTitle = 'Uchinchi tomon kutubxonalar';
+  static const String privacySdkIntro =
+      'pubspec dagi ishga tushirish kutubxonalari. Reklama yoki analytics SDK yo‘q.';
+  static const String privacySdkConflict =
+      'Bolalar ilovasi qoidasiga zid bo‘lishi mumkin';
+  static const String privacySdkReview = 'Ko‘rib chiqing';
+  static const String privacySdkOk = 'Analytics emas';
+  static const String privacyRedoHint =
+      'Rozilikni qayta berish uchun ma’lumotni o‘chirib, qaytadan ro‘yxatdan o‘ting.';
+
   // —— Umumiy ——
   static const String hours = 'soat';
   static const String minutes = 'daq';

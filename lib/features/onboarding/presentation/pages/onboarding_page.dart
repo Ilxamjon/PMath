@@ -7,6 +7,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../models/user_model.dart';
+import '../../../privacy/presentation/widgets/consent_summary.dart';
 import '../cubit/onboarding_cubit.dart';
 import '../cubit/onboarding_state.dart';
 import '../widgets/grade_selector.dart';
@@ -151,6 +152,7 @@ class _StepBody extends StatelessWidget {
   Widget build(BuildContext context) {
     return switch (state.step) {
       OnboardingStep.welcome => const _WelcomeStep(),
+      OnboardingStep.consent => const _ConsentStep(),
       OnboardingStep.name => _NameStep(state: state),
       OnboardingStep.grade => _GradeStep(state: state),
       OnboardingStep.school => _SchoolStep(state: state),
@@ -237,6 +239,51 @@ InputDecoration _fieldDecoration(String hint) {
       borderSide: const BorderSide(color: AppColors.accent, width: 2),
     ),
   );
+}
+
+class _ConsentStep extends StatelessWidget {
+  const _ConsentStep();
+
+  @override
+  Widget build(BuildContext context) {
+    final cubit = context.read<OnboardingCubit>();
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            AppStrings.privacyTitle,
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w900,
+                ),
+          ),
+          const SizedBox(height: 12),
+          const Expanded(
+            child: SingleChildScrollView(child: ConsentSummary()),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            height: 52,
+            child: ElevatedButton(
+              onPressed: () => cubit.chooseConsent(true),
+              child: const Text(AppStrings.privacyAgree),
+            ),
+          ),
+          const SizedBox(height: 8),
+          SizedBox(
+            width: double.infinity,
+            height: 52,
+            child: OutlinedButton(
+              onPressed: () => cubit.chooseConsent(false),
+              child: const Text(AppStrings.privacyDecline),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 // —— Steps ——

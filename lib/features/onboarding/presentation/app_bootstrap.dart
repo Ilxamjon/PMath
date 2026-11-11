@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_strings.dart';
+import '../../../core/navigation/app_shell_nav.dart';
 import '../../../models/user_model.dart';
 import '../../../services/auth_service.dart';
 import '../../../services/storage_service.dart';
@@ -10,13 +11,14 @@ import '../../diagnostic/data/diagnostic_repository.dart';
 import '../../diagnostic/presentation/cubit/diagnostic_cubit.dart';
 import '../../diagnostic/presentation/pages/diagnostic_page.dart';
 import '../../home/presentation/pages/main_shell.dart';
+import '../../privacy/presentation/pages/parent_consent_gate.dart';
 import '../../study_plan/data/study_plan_repository.dart';
 import '../../study_plan/presentation/cubit/roadmap_gen_cubit.dart';
 import '../../study_plan/presentation/pages/roadmap_generating_page.dart';
 import 'cubit/onboarding_cubit.dart';
 import 'pages/onboarding_page.dart';
 
-enum _AppGate { loading, onboarding, diagnostic, roadmap, home }
+enum _AppGate { loading, onboarding, consent, diagnostic, roadmap, home }
 
 /// Ilova: Onboarding → Diagnostik → AI Roadmap → Dashboard.
 class AppBootstrap extends StatefulWidget {
@@ -33,6 +35,23 @@ class _AppBootstrapState extends State<AppBootstrap> {
   var _started = false;
 
   @override
+  void initState() {
+    super.initState();
+    AppShellNav.sessionReset.addListener(_onSessionReset);
+  }
+
+  @override
+  void dispose() {
+    AppShellNav.sessionReset.removeListener(_onSessionReset);
+    super.dispose();
+  }
+
+  void _onSessionReset() {
+    if (!mounted) return;
+    _resolveGate();
+  }
+
+  @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (_started) return;
@@ -41,6 +60,7 @@ class _AppBootstrapState extends State<AppBootstrap> {
   }
 
   Future<void> _resolveGate() async {
+    if (!mounted) return;
     final storage = context.read<StorageService>();
     var saved = storage.getUser();
 
@@ -69,6 +89,11 @@ class _AppBootstrapState extends State<AppBootstrap> {
     }
 
     _user = saved;
+
+    if (saved.parentConsentAt == null) {
+      setState(() => _gate = _AppGate.consent);
+      return;
+    }
 
     if (!storage.isDiagnosticDone) {
       setState(() => _gate = _AppGate.diagnostic);
@@ -108,6 +133,10 @@ class _AppBootstrapState extends State<AppBootstrap> {
             storageService: context.read<StorageService>(),
           ),
           child: OnboardingPage(onCompleted: _onOnboardingCompleted),
+        ),
+      _AppGate.consent => ParentConsentGate(
+          user: _user!,
+          onDone: _resolveGate,
         ),
       _AppGate.diagnostic => BlocProvider(
           create: (context) => DiagnosticCubit(

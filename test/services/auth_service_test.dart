@@ -46,6 +46,8 @@ class _FakeGateway implements OtpGateway {
     required int grade,
     required String targetSchool,
     required String parentPhone,
+    required bool parentConsentGranted,
+    required DateTime parentConsentAt,
   }) async {
     final row = server;
     if (failNetwork || row == null || id == null) {
@@ -53,6 +55,12 @@ class _FakeGateway implements OtpGateway {
     }
     return row;
   }
+
+  @override
+  Future<void> saveConsent({
+    required bool granted,
+    required DateTime at,
+  }) async {}
 
   @override
   Future<ServerSubscription?> fetchSubscription() async => server;
@@ -121,7 +129,12 @@ void main() {
       targetSchool: 'Prezident maktabi',
       parentPhone: '901234567',
       welcomeCoins: 10,
+      parentConsentGranted: true,
+      parentConsentAt: serverNow,
     );
+
+    expect(user.parentConsentGranted, isTrue);
+    expect(user.parentConsentAt, serverNow);
 
     expect(user.subscriptionExpiresAt, gateway.server!.expiresAt);
     final atFetch = user.deviceObservedAt!;

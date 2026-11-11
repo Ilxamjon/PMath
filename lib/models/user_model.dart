@@ -57,6 +57,8 @@ class UserModel extends Equatable {
     this.totalStudyMinutes = 0,
     this.cheatingWarnings = 0,
     this.telegramChatId,
+    this.parentConsentGranted = false,
+    this.parentConsentAt,
   });
 
   final String id;
@@ -87,6 +89,12 @@ class UserModel extends Equatable {
 
   /// Ota-ona Telegram chat_id (Bot orqali xabar uchun).
   final String? telegramChatId;
+
+  /// Ota-ona kamera, yuz tekshiruvi va daftar rasmini yuborishga rozimi.
+  final bool parentConsentGranted;
+
+  /// Rozilik qarori vaqti. Null — hali so‘ralmagan.
+  final DateTime? parentConsentAt;
 
   /// Sinov tugashiga qolgan kun. Server vaqti + faqat oldinga siljish.
   int trialDaysLeftAt(DateTime deviceNow) {
@@ -142,6 +150,8 @@ class UserModel extends Equatable {
     int? cheatingWarnings,
     String? telegramChatId,
     bool clearTelegramChatId = false,
+    bool? parentConsentGranted,
+    DateTime? parentConsentAt,
   }) {
     return UserModel(
       id: id ?? this.id,
@@ -166,6 +176,8 @@ class UserModel extends Equatable {
       telegramChatId: clearTelegramChatId
           ? null
           : (telegramChatId ?? this.telegramChatId),
+      parentConsentGranted: parentConsentGranted ?? this.parentConsentGranted,
+      parentConsentAt: parentConsentAt ?? this.parentConsentAt,
     );
   }
 
@@ -190,6 +202,8 @@ class UserModel extends Equatable {
         'totalStudyMinutes': totalStudyMinutes,
         'cheatingWarnings': cheatingWarnings,
         'telegramChatId': telegramChatId,
+        'parentConsentGranted': parentConsentGranted,
+        'parentConsentAt': parentConsentAt?.toIso8601String(),
       };
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -227,6 +241,10 @@ class UserModel extends Equatable {
       totalStudyMinutes: json['totalStudyMinutes'] as int? ?? 0,
       cheatingWarnings: json['cheatingWarnings'] as int? ?? 0,
       telegramChatId: json['telegramChatId'] as String?,
+      parentConsentGranted: json['parentConsentGranted'] as bool? ?? false,
+      parentConsentAt: json['parentConsentAt'] != null
+          ? DateTime.parse(json['parentConsentAt'] as String)
+          : null,
     );
   }
 
@@ -271,5 +289,7 @@ class UserModel extends Equatable {
         totalStudyMinutes,
         cheatingWarnings,
         telegramChatId,
+        parentConsentGranted,
+        parentConsentAt,
       ];
 }

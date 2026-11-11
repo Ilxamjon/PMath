@@ -23,6 +23,14 @@ abstract class AuthService {
     required String targetSchool,
     required String parentPhone,
     required int welcomeCoins,
+    required bool parentConsentGranted,
+    required DateTime parentConsentAt,
+  });
+
+  /// Allaqachon ochilgan profilga rozilik qarorini yozadi.
+  Future<void> saveParentConsent({
+    required bool granted,
+    required DateTime at,
   });
 
   /// Keshlangan foydalanuvchini server holati bilan yangilaydi.
@@ -76,6 +84,8 @@ class StubAuthService implements AuthService {
     required String targetSchool,
     required String parentPhone,
     required int welcomeCoins,
+    required bool parentConsentGranted,
+    required DateTime parentConsentAt,
   }) async {
     final now = DateTime.now();
     return UserModel(
@@ -94,8 +104,16 @@ class StubAuthService implements AuthService {
       coins: welcomeCoins,
       level: 1,
       streakDays: 1,
+      parentConsentGranted: parentConsentGranted,
+      parentConsentAt: parentConsentAt,
     );
   }
+
+  @override
+  Future<void> saveParentConsent({
+    required bool granted,
+    required DateTime at,
+  }) async {}
 
   @override
   Future<UserModel?> refreshAccess(UserModel cached) async => cached;

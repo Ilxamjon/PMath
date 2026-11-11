@@ -11,7 +11,9 @@ import 'package:path_provider/path_provider.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../models/homework_model.dart';
+import '../../../../services/storage_service.dart';
 import '../../../../services/vision_ai_service.dart';
+import '../../../privacy/domain/parent_consent.dart';
 import '../../../homework/data/homework_service.dart';
 import 'scan_result_page.dart';
 import 'step_confirm_page.dart';
@@ -36,6 +38,17 @@ class _CameraScanPageState extends State<CameraScanPage> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _openIfAllowed());
+  }
+
+  void _openIfAllowed() {
+    if (!mounted) return;
+    final allowed =
+        parentAllowsCamera(context.read<StorageService>().getUser());
+    if (!allowed) {
+      Navigator.of(context).pop();
+      return;
+    }
     _initCamera();
   }
 
@@ -136,6 +149,9 @@ class _CameraScanPageState extends State<CameraScanPage> {
   Future<void> _analyze() async {
     final path = _previewPath;
     if (path == null) return;
+    if (!parentAllowsCamera(context.read<StorageService>().getUser())) {
+      return;
+    }
     setState(() => _analyzing = true);
     try {
       final vision = kDebugMode && path.endsWith('.txt')

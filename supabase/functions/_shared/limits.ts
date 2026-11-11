@@ -12,6 +12,7 @@ export const RATE_LIMITS = {
   'telegram-status': 30,
   'telegram-webhook': 60,
   'vision-analyze': 6,
+  'delete-account': 3,
 } as const;
 
 export type FunctionName = keyof typeof RATE_LIMITS;

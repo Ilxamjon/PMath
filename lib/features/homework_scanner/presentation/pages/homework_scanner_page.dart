@@ -8,6 +8,7 @@ import '../../../../models/homework_model.dart';
 import '../../../homework/data/homework_service.dart';
 import '../../../homework/presentation/pages/homework_detail_page.dart';
 import '../../../../services/storage_service.dart';
+import '../../../privacy/domain/parent_consent.dart';
 import 'camera_scan_page.dart';
 
 /// Vision AI skaner + kutilayotgan yozma vazifalar ro‘yxati.
@@ -59,6 +60,19 @@ class _HomeworkScannerPageState extends State<HomeworkScannerPage> {
           content: const Text(
             'Avval mashqni yakunlang — uyga vazifa paydo bo‘ladi, keyin skanerlang.',
           ),
+          backgroundColor: AppColors.warning,
+          behavior: SnackBarBehavior.floating,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      );
+      return;
+    }
+
+    if (!parentAllowsCamera(context.read<StorageService>().getUser())) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(AppStrings.privacyCameraOff),
           backgroundColor: AppColors.warning,
           behavior: SnackBarBehavior.floating,
           shape:

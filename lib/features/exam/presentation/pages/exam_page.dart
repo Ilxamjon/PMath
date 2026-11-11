@@ -256,11 +256,12 @@ class _QuizView extends StatelessWidget {
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
               ),
-              ProctoringCameraPip(
-                guard: context.read<ProctoringGuard>(),
-                onLongPressSimulate: () =>
-                    context.read<ExamCubit>().simulateProctoringViolation(),
-              ),
+              if (context.read<ProctoringGuard>().isActive)
+                ProctoringCameraPip(
+                  guard: context.read<ProctoringGuard>(),
+                  onLongPressSimulate: () =>
+                      context.read<ExamCubit>().simulateProctoringViolation(),
+                ),
             ],
           ),
         ),

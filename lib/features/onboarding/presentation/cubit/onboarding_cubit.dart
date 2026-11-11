@@ -24,13 +24,23 @@ class OnboardingCubit extends Cubit<OnboardingState> {
   bool get devOtpHint => _auth is StubAuthService;
 
   void start() => emit(state.copyWith(
-        step: OnboardingStep.name,
+        step: OnboardingStep.consent,
         clearError: true,
       ));
 
+  void chooseConsent(bool granted) {
+    emit(state.copyWith(
+      parentConsentGranted: granted,
+      parentConsentAt: DateTime.now(),
+      step: OnboardingStep.name,
+      clearError: true,
+    ));
+  }
+
   void goBack() {
     final prev = switch (state.step) {
-      OnboardingStep.name => OnboardingStep.welcome,
+      OnboardingStep.consent => OnboardingStep.welcome,
+      OnboardingStep.name => OnboardingStep.consent,
       OnboardingStep.grade => OnboardingStep.name,
       OnboardingStep.school => OnboardingStep.grade,
       OnboardingStep.phone => OnboardingStep.school,
@@ -148,6 +158,12 @@ class OnboardingCubit extends Cubit<OnboardingState> {
       return;
     }
 
+    final consentAt = state.parentConsentAt;
+    if (consentAt == null) {
+      emit(state.copyWith(errorMessage: AppStrings.privacyConsentMissing));
+      return;
+    }
+
     emit(state.copyWith(isLoading: true, clearError: true));
     try {
       final ok = await _auth.verifyOtp(state.fullPhone, state.otpCode);
@@ -165,6 +181,8 @@ class OnboardingCubit extends Cubit<OnboardingState> {
         targetSchool: state.targetSchool.trim(),
         parentPhone: state.fullPhone,
         welcomeCoins: 10,
+        parentConsentGranted: state.parentConsentGranted,
+        parentConsentAt: consentAt,
       );
 
       await _storage.completeOnboarding(user);

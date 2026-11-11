@@ -9,6 +9,7 @@ import 'features/diagnostic/data/diagnostic_repository.dart';
 import 'features/grading/domain/ai_grading_service.dart';
 import 'features/homework/data/homework_service.dart';
 import 'features/onboarding/presentation/app_bootstrap.dart';
+import 'features/privacy/domain/account_erasure.dart';
 import 'features/proctoring/domain/proctoring_guard.dart';
 import 'features/study_plan/data/study_plan_repository.dart';
 import 'features/study_plan/domain/ai_study_plan_generator.dart';
@@ -49,7 +50,9 @@ Future<void> main() async {
   );
   final tts = FlutterTtsService();
   final stt = DeviceSttService();
-  final proctoring = LocalProctoringGuard();
+  final proctoring = LocalProctoringGuard(
+    cameraAllowed: () => storage.getUser()?.parentConsentGranted == true,
+  );
   final parentAlerts = TelegramParentAlertService(
     storage: storage,
     gateway: gateway,
@@ -62,9 +65,15 @@ Future<void> main() async {
     allowStub: kDebugMode,
     cloudReady: gateway.isReady,
     gateway: gateway,
+    allowUpload: () => storage.getUser()?.parentConsentGranted == true,
   );
   final tutor = AiTutorService(gateway: gateway);
   final gradingAi = LocalAiGradingService();
+  final erasure = AccountErasure(
+    storage: storage,
+    auth: auth,
+    gateway: gateway,
+  );
 
   runApp(
     MultiRepositoryProvider(
@@ -84,6 +93,7 @@ Future<void> main() async {
         RepositoryProvider<HomeworkService>.value(value: homeworkService),
         RepositoryProvider<VisionAiService>.value(value: visionAi),
         RepositoryProvider<AiGradingService>.value(value: gradingAi),
+        RepositoryProvider<AccountErasure>.value(value: erasure),
       ],
       child: const PMathApp(),
     ),

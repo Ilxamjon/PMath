@@ -5,6 +5,7 @@ import '../../../../models/user_model.dart';
 /// Onboarding qadamlari.
 enum OnboardingStep {
   welcome,
+  consent,
   name,
   grade,
   school,
@@ -26,6 +27,8 @@ class OnboardingState extends Equatable {
     this.completedUser,
     this.otpSent = false,
     this.resendSecondsLeft = 0,
+    this.parentConsentGranted = false,
+    this.parentConsentAt,
   });
 
   final OnboardingStep step;
@@ -41,6 +44,8 @@ class OnboardingState extends Equatable {
   final UserModel? completedUser;
   final bool otpSent;
   final int resendSecondsLeft;
+  final bool parentConsentGranted;
+  final DateTime? parentConsentAt;
 
   String get fullPhone {
     final digits = parentPhoneLocal.replaceAll(RegExp(r'\D'), '');
@@ -58,20 +63,21 @@ class OnboardingState extends Equatable {
 
   int get stepIndex => OnboardingStep.values.indexOf(step);
 
-  /// Welcome va done hisobga olinmagan progress (1..4).
+  /// Welcome va done hisobga olinmagan progress.
   int get visibleProgress {
     return switch (step) {
       OnboardingStep.welcome => 0,
-      OnboardingStep.name => 1,
-      OnboardingStep.grade => 2,
-      OnboardingStep.school => 3,
-      OnboardingStep.phone => 4,
-      OnboardingStep.otp => 5,
-      OnboardingStep.done => 5,
+      OnboardingStep.consent => 1,
+      OnboardingStep.name => 2,
+      OnboardingStep.grade => 3,
+      OnboardingStep.school => 4,
+      OnboardingStep.phone => 5,
+      OnboardingStep.otp => 6,
+      OnboardingStep.done => 6,
     };
   }
 
-  static const int totalVisibleSteps = 5;
+  static const int totalVisibleSteps = 6;
 
   OnboardingState copyWith({
     OnboardingStep? step,
@@ -86,6 +92,8 @@ class OnboardingState extends Equatable {
     UserModel? completedUser,
     bool? otpSent,
     int? resendSecondsLeft,
+    bool? parentConsentGranted,
+    DateTime? parentConsentAt,
   }) {
     return OnboardingState(
       step: step ?? this.step,
@@ -99,6 +107,8 @@ class OnboardingState extends Equatable {
       completedUser: completedUser ?? this.completedUser,
       otpSent: otpSent ?? this.otpSent,
       resendSecondsLeft: resendSecondsLeft ?? this.resendSecondsLeft,
+      parentConsentGranted: parentConsentGranted ?? this.parentConsentGranted,
+      parentConsentAt: parentConsentAt ?? this.parentConsentAt,
     );
   }
 
@@ -115,5 +125,7 @@ class OnboardingState extends Equatable {
         completedUser,
         otpSent,
         resendSecondsLeft,
+        parentConsentGranted,
+        parentConsentAt,
       ];
 }

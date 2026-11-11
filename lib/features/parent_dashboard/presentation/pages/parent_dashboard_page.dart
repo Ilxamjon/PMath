@@ -18,6 +18,7 @@ import '../../../../services/parent_alert_service.dart';
 import '../../../../services/storage_service.dart';
 import '../../../homework/data/homework_service.dart';
 import '../../../homework/presentation/pages/homework_detail_page.dart';
+import '../../../privacy/presentation/pages/privacy_settings_page.dart';
 import '../../domain/telegram_link_service.dart';
 
 /// Ota-ona paneli: real progress, zaif mavzu, Telegram alertlar.
@@ -478,6 +479,21 @@ class _ParentDashboardPageState extends State<ParentDashboardPage> {
                         )
                         .toList(),
                   ),
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            height: 52,
+            child: OutlinedButton(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const PrivacySettingsPage(),
+                  ),
+                );
+              },
+              child: const Text(AppStrings.privacyOpenSettings),
+            ),
           ),
         ],
       ),

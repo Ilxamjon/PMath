@@ -160,11 +160,15 @@ class RemoteVisionAiService implements VisionAiService {
     required EdgeInvoker gateway,
     ImageEncoder? encode,
     FileDeleter? deleteFile,
+    this.allowUpload,
   })  : _gateway = gateway,
         _encode = encode ?? encodeNotebookJpeg,
         _deleteFile = deleteFile ?? _deleteIfExists;
 
   final EdgeInvoker _gateway;
+
+  /// false bo‘lsa rasm kodlanmaydi va yuborilmaydi.
+  final bool Function()? allowUpload;
   final ImageEncoder _encode;
   final FileDeleter _deleteFile;
 
@@ -179,6 +183,11 @@ class RemoteVisionAiService implements VisionAiService {
     required HomeworkModel homework,
   }) async {
     try {
+      if (allowUpload != null && !allowUpload!()) {
+        throw const VisionAnalysisException(
+          'Ota-ona roziligisiz daftar rasmi yuborilmaydi.',
+        );
+      }
       final jpeg = await _encode(imagePath);
       final body = {
         'imageBase64': base64Encode(jpeg),
@@ -256,7 +265,8 @@ VisionAiService createVisionService({
   required bool allowStub,
   required bool cloudReady,
   required EdgeInvoker gateway,
+  bool Function()? allowUpload,
 }) {
   if (allowStub && !cloudReady) return StubVisionAiService();
-  return RemoteVisionAiService(gateway: gateway);
+  return RemoteVisionAiService(gateway: gateway, allowUpload: allowUpload);
 }

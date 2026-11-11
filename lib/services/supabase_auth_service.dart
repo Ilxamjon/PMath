@@ -30,6 +30,13 @@ abstract class OtpGateway {
     required int grade,
     required String targetSchool,
     required String parentPhone,
+    required bool parentConsentGranted,
+    required DateTime parentConsentAt,
+  });
+
+  Future<void> saveConsent({
+    required bool granted,
+    required DateTime at,
   });
 
   Future<ServerSubscription?> fetchSubscription();
@@ -80,11 +87,30 @@ class LiveOtpGateway implements OtpGateway {
   Future<void> signOut() => _db.auth.signOut();
 
   @override
+  Future<void> saveConsent({
+    required bool granted,
+    required DateTime at,
+  }) async {
+    final id = userId;
+    if (id == null) return;
+    try {
+      await _db.from('profiles').update({
+        'parent_consent_granted': granted,
+        'parent_consent_at': at.toUtc().toIso8601String(),
+      }).eq('id', id);
+    } catch (error) {
+      throw _asFailure(error);
+    }
+  }
+
+  @override
   Future<ServerSubscription> createProfile({
     required String studentName,
     required int grade,
     required String targetSchool,
     required String parentPhone,
+    required bool parentConsentGranted,
+    required DateTime parentConsentAt,
   }) async {
     final id = userId;
     if (id == null) throw const AuthFailure(AuthFailureKind.network);
@@ -96,6 +122,8 @@ class LiveOtpGateway implements OtpGateway {
           'grade': grade,
           'target_school': targetSchool,
           'parent_phone': parentPhone,
+          'parent_consent_granted': parentConsentGranted,
+          'parent_consent_at': parentConsentAt.toUtc().toIso8601String(),
         },
         onConflict: 'id',
       );
@@ -184,6 +212,8 @@ class SupabaseAuthService implements AuthService {
     required String targetSchool,
     required String parentPhone,
     required int welcomeCoins,
+    required bool parentConsentGranted,
+    required DateTime parentConsentAt,
   }) async {
     final phone = StubAuthService.normalizeUzPhone(parentPhone);
     final server = await _gateway.createProfile(
@@ -191,6 +221,8 @@ class SupabaseAuthService implements AuthService {
       grade: grade.number,
       targetSchool: targetSchool,
       parentPhone: phone,
+      parentConsentGranted: parentConsentGranted,
+      parentConsentAt: parentConsentAt,
     );
     return _userFromServer(
       id: currentUserId ?? '',
@@ -200,7 +232,17 @@ class SupabaseAuthService implements AuthService {
       parentPhone: phone,
       welcomeCoins: welcomeCoins,
       server: server,
+      parentConsentGranted: parentConsentGranted,
+      parentConsentAt: parentConsentAt,
     );
+  }
+
+  @override
+  Future<void> saveParentConsent({
+    required bool granted,
+    required DateTime at,
+  }) {
+    return _gateway.saveConsent(granted: granted, at: at);
   }
 
   @override
@@ -224,6 +266,8 @@ class SupabaseAuthService implements AuthService {
     required String parentPhone,
     required int welcomeCoins,
     required ServerSubscription server,
+    required bool parentConsentGranted,
+    required DateTime parentConsentAt,
   }) {
     final observed = DateTime.now();
     return UserModel(
@@ -242,6 +286,8 @@ class SupabaseAuthService implements AuthService {
       coins: welcomeCoins,
       level: 1,
       streakDays: 1,
+      parentConsentGranted: parentConsentGranted,
+      parentConsentAt: parentConsentAt,
     );
   }
 

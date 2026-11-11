@@ -46,7 +46,7 @@ class PracticeCubit extends Cubit<PracticeState> {
   Future<void> start() async {
     _proctoring.startSession(lessonId: 'practice_${state.lesson.id}');
     emit(state.copyWith(
-      proctoringActive: true,
+      proctoringActive: _proctoring.isActive,
       isProctoringPaused: false,
     ));
   }

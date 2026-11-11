@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../core/utils/iso_week.dart';
 import '../core/utils/mastery_helper.dart';
 import '../features/gamification/domain/avatar_catalog.dart';
 import '../features/gamification/domain/gamification_reward.dart';
@@ -438,12 +439,8 @@ class StorageService {
     await saveUser(user.copyWith(avatarId: avatarId));
   }
 
-  String _currentWeekKey() {
-    final d = DateTime.now();
-    final start = DateTime(d.year);
-    final week = (d.difference(start).inDays / 7).floor() + 1;
-    return '${d.year}-W$week';
-  }
+  /// ISO-8601 hafta kaliti (yil chegarasida ham to‘g‘ri).
+  String _currentWeekKey() => isoWeekKey(DateTime.now());
 
   int getWeeklyXp() {
     final week = _prefs.getString(_weeklyXpWeekKey);

@@ -3,6 +3,9 @@
 > Maqsad: 3–4-sinf o‘quvchilarini Prezident / ixtisoslashgan maktablarga tayyorlash.
 > Arxitektura: Clean Architecture · State: `flutter_bloc` · Backend: Supabase · UI: o‘zbek tili.
 
+**Status belgilari:** ✅ haqiqiy ishlaydi · 🟡 stub / demo (backend yoki real servis yo‘q) · ⬜ boshlanmagan.
+Batafsil audit va ochiq xavflar: [docs/AUDIT.md](docs/AUDIT.md).
+
 ---
 
 ## Hozirgi holat (Foundation — ✅ tayyor)
@@ -15,18 +18,18 @@
 | Bottom Nav: Xarita / Skaner / Ota-ona | ✅ |
 | Duolingo-uslubidagi Learning Map (demo) | ✅ |
 | Mastery Lock 80% qoidasi (helper) | ✅ |
-| Storage / Auth stub | ✅ |
+| Storage / Auth stub | 🟡 |
 
 ---
 
 ## Bosqichma-bosqich bajarish rejasi
 
-### 1-bosqich — Onboarding & Profil ✅
+### 1-bosqich — Onboarding & Profil ✅ (Auth: 🟡 stub)
 **Maqsad:** Ism, sinf (3/4), maqsad maktab, ota-ona telefoni.
 - [x] Onboarding UI (welcome → ism → sinf → maktab → telefon → OTP → done)
 - [x] `UserModel` ni `StorageService` ga yozish
-- [x] Auth abstraksiya + Stub OTP (Supabase uchun TODO hook)
-- [x] 7 kunlik trial timer (`subscriptionExpiresAt` + `SubscriptionStatus.trial`)
+- [ ] 🟡 Auth abstraksiya + Stub OTP — hozir istalgan 4+ belgili kod o‘tadi; haqiqiy Supabase Phone OTP hali ulanmagan
+- [x] 7 kunlik trial timer (`subscriptionExpiresAt` + `SubscriptionStatus.trial`) — ⚠️ lokal, server tekshiruvi yo‘q
 
 **Qabul sharti:** Profil saqlanadi, keyingi ochilishda Dashboard ga o‘tadi. ✅
 
@@ -57,7 +60,7 @@
 ### 4-bosqich — Interaktiv AI dars xonasi ✅
 **Maqsad:** TTS + vizual + Sokratik savollar.
 - [x] Lesson Room UI
-- [x] TTS (o‘zbekcha audio — `flutter_tts`)
+- [x] TTS (o‘zbekcha audio — `flutter_tts`) — ⚠️ `uz-UZ` ovozi qurilmaga bog‘liq, real telefonlarda sinash kerak
 - [x] Sokratik promptlar (`LessonModel.socraticPrompts`)
 - [x] Proctoring hook (12-bosqich uchun stub)
 
@@ -85,13 +88,14 @@
 
 ---
 
-### 7-bosqich — Vision AI skaner (OCR) ✅
+### 7-bosqich — Vision AI skaner (OCR) 🟡
 **Maqsad:** Daftar sahifasini kamera orqali tahlil.
 - [x] `camera` package real preview (+ galereya / demo fallback)
-- [x] Rasmni Vision AI servisga yuborish (`VisionAiService`)
-- [x] Qadamlar ekstraksiyasi (JSON)
+- [ ] 🟡 Rasmni Vision AI servisga yuborish (`VisionAiService`) — hozir `StubVisionAiService`: rasmni o‘qimaydi, masala matnidan namuna qadamlar yasaydi
+- [ ] 🟡 Qadamlar ekstraksiyasi (JSON) — format tayyor, real OCR/Vision model ulanmagan
+- [ ] ⬜ Ishonch darajasi past bo‘lsa ota-ona qadamlarni tasdiqlaydigan ekran
 
-**Qabul sharti:** Rasm yuboriladi, qadamlar JSON qaytadi. ✅
+**Qabul sharti:** Rasm yuboriladi, qadamlar JSON qaytadi. 🟡 (real modelsiz — demo)
 
 ---
 
@@ -118,7 +122,7 @@
 **Maqsad:** N+1 dars N 80%+ bo‘lmaguncha yopiq.
 - [x] Lock logikasi (`MasteryHelper` + Map + storage unlock)
 - [x] Blok modal (o‘zbekcha)
-- [x] Obuna gate (7 kundan keyin) + stub paywall
+- [x] Obuna gate (7 kundan keyin) + stub paywall — 🟡 lokal, server tomonida tekshirilmaydi
 
 **Qabul sharti:** 79% da keyingi dars ochilmaydi. ✅
 
@@ -127,7 +131,7 @@
 ### 11-bosqich — Haftalik / oylik imtihonlar
 **Maqsad:** Prezident maktabi uslubidagi simulyatsiya.
 - [x] Timer, savollar to‘plami (`ExamPage` + `ExamQuestionBank`)
-- [x] Natija + ranking (liga)
+- [x] Natija + ranking (liga) — 🟡 faqat lokal XP, haqiqiy reyting uchun backend kerak
 - [x] `isExamWeek` bilan bog‘lash
 
 **Qabul sharti:** Imtihon tugagach hisobot chiqadi. ✅
@@ -147,8 +151,9 @@
 ### 13-bosqich — Ota-ona paneli & Telegram
 **Maqsad:** Progress, zaif mavzu, soat, cheating.
 - [x] Real data (darslar mastery, streak, soat, imtihon)
-- [x] Telegram Bot API alertlar (`TelegramParentAlertService`)
+- [x] Telegram Bot API alertlar (`TelegramParentAlertService`) — ⚠️ bot token hozir ilova ichida; backend orqali yuborish kerak
 - [x] Streak yo‘qolishi → Telegram/lokal alert (`StreakMonitor`)
+- [ ] ⬜ Chat ID ni `t.me/<bot>?start=<kod>` deep link bilan avtomatik bog‘lash
 
 **Qabul sharti:** Missed homework → ota-ona xabar oladi. ✅
 
@@ -158,7 +163,7 @@
 **Maqsad:** 🔥 Streak, 🪙 tanga, daraja, avatar, liga.
 - [x] `GamificationService` — streak, XP/level, kunlik bonus, avatar unlock
 - [x] Avatar katalog + hub UI (`GamificationHubPage`)
-- [x] Weekly league leaderboard
+- [x] Weekly league leaderboard — 🟡 lokal
 - [x] Kunlik ochilish streak persist (`recordDailyOpen`)
 - [x] Header: avatar emoji + XP progress
 
@@ -189,6 +194,7 @@
 - [ ] Subscription feature + paywall UI
 - [ ] Day 7+ darslarni qulflash
 - [ ] Payment provider integratsiya
+- [ ] ⚠️ Do‘kon (App Store / Google Play) to‘lov qoidalarini oldindan tekshirish
 
 ---
 
@@ -207,6 +213,8 @@
 
 ## Keyingi qadam (darhol)
 
-**Monetizatsiya** (Click/Payme/RevenueCat) yoki polish/sprint yakuni.
+1. **Backend + haqiqiy Auth** (Supabase, Edge Function proksi) — [docs/AUDIT.md](docs/AUDIT.md) dagi P0 bandlar.
+2. **Real Vision OCR** va ota-ona tasdiqlash ekrani.
+3. **Monetizatsiya** (Click/Payme/RevenueCat) yoki polish/sprint yakuni.
 
 Buyruq: *«Paywall ni to‘liq qil»* yoki *«Sprint 5 ni yakunla»*.

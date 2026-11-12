@@ -126,10 +126,13 @@ abstract final class AppStrings {
   static const String otpError = 'Kod noto‘g‘ri. Qayta urinib ko‘ring';
   static const String otpNetwork =
       'Internet yo‘q. Ulanishni tekshirib, qayta urinib ko‘ring';
+  static const String otpUnavailable =
+      'SMS yuborilmadi. Birozdan keyin qayta urinib ko‘ring';
   static const String otpResend = 'Qayta yuborish';
   static const String otpResendWait = 'Qayta yuborish ({n} s)';
   static const String verifyOtp = 'Tasdiqlash';
-  static const String otpDevHint = 'Sinov: istalgan 4+ xonali kod (masalan 1234)';
+  static const String otpDevHint =
+      'SMS bu nusxada yuborilmaydi. Davom etish uchun 1234 ni kiriting.';
 
   static const String finishTitle = 'Tayyor!';
   static const String finishSubtitle =

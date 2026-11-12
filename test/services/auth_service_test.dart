@@ -76,6 +76,14 @@ void main() {
     expect(auth, isA<SupabaseAuthService>());
   });
 
+  test('bulut sozlanmagan release lokal kodga o‘tadi', () {
+    final auth = createAuthService(
+      allowStub: false,
+      supabaseConfigured: false,
+    );
+    expect(auth, isA<StubAuthService>());
+  });
+
   test('debug va Supabase yo‘q bo‘lsa stub qoladi', () {
     final auth = createAuthService(
       allowStub: true,

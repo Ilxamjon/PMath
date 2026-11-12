@@ -166,7 +166,7 @@ class LiveOtpGateway implements OtpGateway {
   AuthFailure _asFailure(Object error) {
     if (error is AuthFailure) return error;
     if (_isNetwork(error)) return const AuthFailure(AuthFailureKind.network);
-    return const AuthFailure(AuthFailureKind.network);
+    return const AuthFailure(AuthFailureKind.unavailable);
   }
 
   bool _isNetwork(Object error) {
@@ -299,12 +299,15 @@ class SupabaseAuthService implements AuthService {
   }
 }
 
-/// Release da stub yo‘q. Debug da Supabase bo‘lmasa stub qoladi.
+/// Supabase manzili yo‘q bo‘lsa SMS chaqirilmaydi — lokal kod bilan davom etiladi.
+/// Testlar haqiqiy yo‘lni `gateway` orqali beradi.
 AuthService createAuthService({
   required bool allowStub,
   required bool supabaseConfigured,
   OtpGateway? gateway,
 }) {
-  if (allowStub && !supabaseConfigured) return StubAuthService();
+  if (!supabaseConfigured && (allowStub || gateway == null)) {
+    return StubAuthService();
+  }
   return SupabaseAuthService(gateway: gateway);
 }

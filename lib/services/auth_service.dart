@@ -1,7 +1,7 @@
 import '../models/user_model.dart';
 
 /// OTP yoki tarmoq xatosi. UI o‘zbekcha matnga aylantiradi.
-enum AuthFailureKind { network, invalidCode }
+enum AuthFailureKind { network, invalidCode, unavailable }
 
 class AuthFailure implements Exception {
   const AuthFailure(this.kind);

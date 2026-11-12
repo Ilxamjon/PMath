@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -578,7 +577,7 @@ class _OtpStepState extends State<_OtpStep> {
             decoration: _fieldDecoration(AppStrings.otpHint),
           ),
           const SizedBox(height: 12),
-          if (kDebugMode && cubit.devOtpHint) ...[
+          if (cubit.devOtpHint) ...[
             Text(
               AppStrings.otpDevHint,
               textAlign: TextAlign.center,

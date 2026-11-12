@@ -222,6 +222,7 @@ class OnboardingCubit extends Cubit<OnboardingState> {
     return switch (error.kind) {
       AuthFailureKind.network => AppStrings.otpNetwork,
       AuthFailureKind.invalidCode => AppStrings.otpError,
+      AuthFailureKind.unavailable => AppStrings.otpUnavailable,
     };
   }
 

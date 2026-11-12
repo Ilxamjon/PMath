@@ -298,27 +298,26 @@ class _WelcomeStep extends StatelessWidget {
         children: [
           const Spacer(),
           Container(
-            width: 110,
-            height: 110,
+            width: 108,
+            height: 108,
             decoration: BoxDecoration(
-              gradient: AppColors.goldGradient,
-              borderRadius: BorderRadius.circular(28),
+              borderRadius: BorderRadius.circular(24),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.accent.withValues(alpha: 0.4),
+                  color: AppColors.primaryDark.withValues(alpha: 0.18),
                   blurRadius: 24,
                   offset: const Offset(0, 10),
                 ),
               ],
             ),
-            child: const Center(
-              child: Text(
-                'P',
-                style: TextStyle(
-                  fontSize: 56,
-                  fontWeight: FontWeight.w900,
-                  color: AppColors.primaryDark,
-                ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(24),
+              child: Image.asset(
+                'assets/icons/pmath_logo.png',
+                width: 108,
+                height: 108,
+                fit: BoxFit.cover,
+                filterQuality: FilterQuality.high,
               ),
             ),
           ),

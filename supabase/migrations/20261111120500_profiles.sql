@@ -21,6 +21,9 @@ grant insert (id, student_name, grade, target_school, parent_phone)
   on table public.profiles to authenticated;
 grant update (student_name, grade, target_school, parent_phone)
   on table public.profiles to authenticated;
+-- Upsert ON CONFLICT uchun jadval darajasidagi UPDATE kerak.
+-- Sinov sanasini trigger muzlatadi.
+grant update on table public.profiles to authenticated;
 
 create policy profiles_select_own on public.profiles
   for select to authenticated

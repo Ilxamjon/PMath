@@ -24,6 +24,10 @@ abstract class EdgeInvoker {
   });
 }
 
+/// Telefon yoki anonim sessiya tokeni bo‘lsa bulut chaqiruvi ochiq.
+bool cloudReadyFromToken(String? token) =>
+    token != null && token.trim().isNotEmpty;
+
 /// Haqiqiy chaqiruv: foydalanuvchi JWT si `Authorization` sarlavhasida.
 class SupabaseGateway implements EdgeInvoker {
   SupabaseGateway({http.Client? client}) : _client = client ?? http.Client();
@@ -35,8 +39,8 @@ class SupabaseGateway implements EdgeInvoker {
   @override
   bool get isReady => _ready;
 
-  /// URL va anon kalit berilgan bo‘lsa, anonim sessiya oladi.
-  /// Telefon OTP alohida ish. Xato bo‘lsa lokal rejimda qoladi.
+  /// URL va kalit bo‘lsa, saqlangan telefon sessiyasini ochadi.
+  /// Anonim kirish o‘chiq bo‘lsa ham telefon hisobi bulutni ochadi.
   Future<void> ensureSession() async {
     if (_started) return;
     _started = true;
@@ -47,15 +51,27 @@ class SupabaseGateway implements EdgeInvoker {
         url: SupabaseConfig.url,
         publishableKey: SupabaseConfig.anonKey,
       );
-      final auth = Supabase.instance.client.auth;
-      if (auth.currentSession == null) {
-        final response = await auth.signInAnonymously();
-        _ready = response.session?.accessToken.isNotEmpty ?? false;
-      } else {
-        _ready = auth.currentSession!.accessToken.isNotEmpty;
-      }
     } catch (_) {
       _ready = false;
+      return;
+    }
+
+    _ready = _sessionReady();
+    if (_ready) return;
+
+    try {
+      await Supabase.instance.client.auth.signInAnonymously();
+    } catch (_) {}
+    _ready = _sessionReady();
+  }
+
+  bool _sessionReady() {
+    try {
+      return cloudReadyFromToken(
+        Supabase.instance.client.auth.currentSession?.accessToken,
+      );
+    } catch (_) {
+      return false;
     }
   }
 
@@ -65,9 +81,11 @@ class SupabaseGateway implements EdgeInvoker {
     Map<String, dynamic> body, {
     Duration? timeout,
   }) async {
+    if (!_ready) _ready = _sessionReady();
     if (!_ready) return null;
-    final token = Supabase.instance.client.auth.currentSession?.accessToken;
-    if (token == null || token.isEmpty) return null;
+    final rawToken = Supabase.instance.client.auth.currentSession?.accessToken;
+    if (!cloudReadyFromToken(rawToken)) return null;
+    final token = rawToken!.trim();
 
     final uri = Uri.parse('${SupabaseConfig.url}/functions/v1/$name');
     try {

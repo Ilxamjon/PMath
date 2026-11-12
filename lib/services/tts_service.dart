@@ -15,13 +15,84 @@ abstract class TtsService {
   String get activeLocale;
 }
 
-/// flutter_tts — o‘zbekcha ovoz (turkcha ishlatilmaydi).
+/// O‘zbek lotin ovozi. Rus va turkcha o‘qish aktsent beradi, shuning uchun tanlanmaydi.
+String pickSpeechLocale(Iterable<String> available) {
+  final list = available.toList();
+  const preferred = ['uz-UZ', 'uz_UZ', 'uz', 'uz-Latn-UZ', 'uz-Latn'];
+  for (final want in preferred) {
+    for (final item in list) {
+      final norm = item.replaceAll('_', '-').toLowerCase();
+      final target = want.replaceAll('_', '-').toLowerCase();
+      if (norm == target) return item;
+    }
+  }
+  for (final item in list) {
+    final norm = item.replaceAll('_', '-').toLowerCase();
+    if (norm.startsWith('uz') && !norm.contains('cyrl')) return item;
+  }
+  return 'uz-UZ';
+}
+
+bool _voiceBlobIsFemale(String blob) {
+  return blob.contains('female') ||
+      blob.contains('ayol') ||
+      blob.contains('sfg');
+}
+
+bool _voiceBlobIsMale(String blob) {
+  if (_voiceBlobIsFemale(blob)) return false;
+  return blob.contains('male') || blob.contains('erkak') || blob.contains('uzm');
+}
+
+/// Yuqori ball — o‘zbek erkak ovoz. Boshqa tillar −1.
+int scoreTtsVoice(Map<String, String> voice) {
+  final locale = (voice['locale'] ?? voice['localeId'] ?? '')
+      .toLowerCase()
+      .replaceAll('_', '-');
+  final name = (voice['name'] ?? '').toLowerCase();
+  final features = (voice['features'] ?? '').toLowerCase();
+  final blob = '$name $features';
+  final uzbek = locale.startsWith('uz') || name.contains('uzbek');
+  if (!uzbek || locale.contains('cyrl')) return -1;
+
+  var score = locale == 'uz-uz' ? 30 : 10;
+  if (_voiceBlobIsMale(blob)) score += 40;
+  if (voice['network_required'] == '1') score += 3;
+  return score;
+}
+
+/// Erkak o‘zbek ovoz. Yo‘q bo‘lsa, bor o‘zbek ovozning o‘zi.
+Map<String, String>? pickMaleUzbekVoice(List<Map<String, String>> voices) {
+  Map<String, String>? best;
+  var bestScore = -1;
+  for (final voice in voices) {
+    final score = scoreTtsVoice(voice);
+    if (score > bestScore) {
+      bestScore = score;
+      best = voice;
+    }
+  }
+  return best;
+}
+
+/// Erkak ovoz o‘z balandligida qoladi. Ayol ovoz pastroqqa tushiriladi.
+double pitchForVoice(Map<String, String>? voice) {
+  if (voice == null) return 0.82;
+  final blob =
+      '${voice['name'] ?? ''} ${voice['features'] ?? ''}'.toLowerCase();
+  if (_voiceBlobIsMale(blob)) return 1;
+  return 0.82;
+}
+
+/// flutter_tts — o‘zbekcha erkak ovoz.
 class FlutterTtsService implements TtsService {
   FlutterTtsService({FlutterTts? engine}) : _tts = engine ?? FlutterTts();
 
   final FlutterTts _tts;
   var _speaking = false;
   var _locale = 'uz-UZ';
+  var _pitch = 0.82;
+  Map<String, String>? _voice;
   final _speakingController = StreamController<bool>.broadcast();
 
   @override
@@ -46,6 +117,8 @@ class FlutterTtsService implements TtsService {
       _locale = await _pickUzbekLocale();
       await _tts.setLanguage(_locale);
       await _trySetUzbekVoice();
+      _pitch = pitchForVoice(_voice);
+      await _tts.setPitch(_pitch);
 
       _tts.setStartHandler(() {
         _speaking = true;
@@ -66,42 +139,17 @@ class FlutterTtsService implements TtsService {
     } catch (_) {}
   }
 
-  /// Turkcha/inglizcha emas — faqat o‘zbek (yo‘q bo‘lsa ru, oxirida en).
   Future<String> _pickUzbekLocale() async {
     try {
       final langs = await _tts.getLanguages;
       final available = <String>[];
       if (langs is List) {
-        for (final l in langs) {
-          available.add(l.toString());
+        for (final item in langs) {
+          available.add(item.toString());
         }
       }
-
-      const preferred = [
-        'uz-UZ',
-        'uz_UZ',
-        'uz',
-        'uz-Latn-UZ',
-        'uz-Cyrl-UZ',
-      ];
-      for (final p in preferred) {
-        for (final a in available) {
-          final norm = a.replaceAll('_', '-').toLowerCase();
-          final want = p.replaceAll('_', '-').toLowerCase();
-          if (norm == want || norm.startsWith('uz')) {
-            return a;
-          }
-        }
-      }
-
-      // O‘zbek yo‘q — rus (markaziy Osiyo aksenti), lekin TURKCHA emas.
-      for (final a in available) {
-        final n = a.toLowerCase();
-        if (n.startsWith('ru')) return a;
-      }
+      return pickSpeechLocale(available);
     } catch (_) {}
-
-    // Majburan uz — tizim o‘zi fallback qiladi.
     return 'uz-UZ';
   }
 
@@ -109,18 +157,24 @@ class FlutterTtsService implements TtsService {
     try {
       final voices = await _tts.getVoices;
       if (voices is! List) return;
+      final parsed = <Map<String, String>>[];
       for (final raw in voices) {
         if (raw is! Map) continue;
-        final map = Map<String, String>.from(
-          raw.map((k, v) => MapEntry('$k', '$v')),
+        parsed.add(
+          Map<String, String>.from(
+            raw.map((key, value) => MapEntry('$key', '$value')),
+          ),
         );
-        final locale = (map['locale'] ?? map['localeId'] ?? '').toLowerCase();
-        final name = (map['name'] ?? '').toLowerCase();
-        if (locale.startsWith('uz') || name.contains('uzbek')) {
-          await _tts.setVoice(map);
-          return;
-        }
       }
+      final chosen = pickMaleUzbekVoice(parsed);
+      if (chosen == null) return;
+      final name = chosen['name'];
+      if (name == null || name.isEmpty) return;
+      _voice = {
+        'name': name,
+        'locale': chosen['locale'] ?? chosen['localeId'] ?? _locale,
+      };
+      await _tts.setVoice(_voice!);
     } catch (_) {}
   }
 
@@ -150,8 +204,10 @@ class FlutterTtsService implements TtsService {
     if (cleaned.isEmpty) return;
     try {
       await stop();
-      // Har safar o‘zbek tilini qayta qo‘yamiz (boshqa locale o‘tib ketmasin).
       await _tts.setLanguage(_locale);
+      await _tts.setPitch(_pitch);
+      final voice = _voice;
+      if (voice != null) await _tts.setVoice(voice);
       final spoken = cleaned.replaceAll('|', ', ');
       await _tts.speak(spoken);
     } catch (_) {}
